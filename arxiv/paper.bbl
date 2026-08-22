@@ -1,0 +1,365 @@
+\begin{thebibliography}{10}
+
+\bibitem{Agrawal2019TensorFlowEager}
+A.~Agrawal, A.~N. Modi, A.~Passos, A.~Lavoie, A.~Agarwal, A.~Shankar,
+  I.~Ganichev, J.~Levenberg, M.~Hong, R.~Monga, and S.~Cai.
+\newblock {TensorFlow Eager}: A multi-stage, python-embedded {DSL} for machine
+  learning, 2019.
+\newblock Version 1; establishes imperative construction plus JIT tracing to
+  executable dataflow graphs.
+\newblock URL: \url{https://arxiv.org/abs/1903.01855v1}, \href
+  {http://arxiv.org/abs/1903.01855} {\path{arXiv:1903.01855}}.
+
+\bibitem{Amini2025OpenAgentSpec}
+S.~Amini, Y.~Benajiba, C.~Bernardis, P.~Cayet, H.~Chafi, A.~Fathan, L.~Faucon,
+  D.~Hilloulin, S.~Hong, I.~Kossyk, T.~M.~S. Le, R.~Patra, S.~Ravi,
+  J.~Schweizer, J.~Singh, S.~Singh, W.~Sun, K.~Talamadupula, and J.~Xu.
+\newblock Open agent specification ({Agent Spec}): A unified representation for
+  {AI} agents, 2025.
+\newblock Version 4.
+\newblock URL: \url{https://arxiv.org/abs/2510.04173v4}, \href
+  {http://arxiv.org/abs/2510.04173} {\path{arXiv:2510.04173}}.
+
+\bibitem{Besanson2026SARC}
+G.~Besanson.
+\newblock {SARC}: A governance-by-architecture framework for agentic {AI}
+  systems, 2026.
+\newblock Working paper.
+\newblock URL: \url{https://arxiv.org/abs/2605.07728v1}, \href
+  {http://arxiv.org/abs/2605.07728} {\path{arXiv:2605.07728}}.
+
+\bibitem{Burckhardt2021DurableFunctions}
+S.~Burckhardt, C.~Gillum, D.~Justo, K.~Kallas, C.~McMahon, and C.~S.
+  Meiklejohn.
+\newblock Durable functions: Semantics for stateful serverless.
+\newblock {\em Proceedings of the ACM on Programming Languages}, 5(OOPSLA),
+  2021.
+\newblock \href {https://doi.org/10.1145/3485510} {\path{doi:10.1145/3485510}}.
+
+\bibitem{Colledanchise2017BehaviorTrees}
+M.~Colledanchise and P.~{\"O}gren.
+\newblock How behavior trees modularize hybrid control systems and generalize
+  sequential behavior compositions, the subsumption architecture, and decision
+  trees.
+\newblock {\em IEEE Transactions on Robotics}, 33(2):372--389, 2017.
+\newblock \href {https://doi.org/10.1109/TRO.2016.2633567}
+  {\path{doi:10.1109/TRO.2016.2633567}}.
+
+\bibitem{Crusoe2022CWL}
+M.~R. Crusoe, S.~Abeln, A.~Iosup, P.~Amstutz, J.~Chilton, N.~Tijani{\'c},
+  H.~M{\'e}nager, S.~Soiland-Reyes, B.~Gavrilovi{\'c}, C.~Goble, and {The CWL
+  Community}.
+\newblock Methods included: Standardizing computational reuse and portability
+  with the common workflow language.
+\newblock {\em Communications of the ACM}, 65(6):54--63, 2022.
+\newblock \href {https://doi.org/10.1145/3486897} {\path{doi:10.1145/3486897}}.
+
+\bibitem{Deelman2015Pegasus}
+E.~Deelman, K.~Vahi, G.~Juve, M.~Rynge, S.~Callaghan, P.~J. Maechling,
+  R.~Mayani, W.~Chen, R.~F. da~Silva, M.~Livny, and K.~Wenger.
+\newblock Pegasus, a workflow management system for science automation.
+\newblock {\em Future Generation Computer Systems}, 46:17--35, 2015.
+\newblock \href {https://doi.org/10.1016/j.future.2014.10.008}
+  {\path{doi:10.1016/j.future.2014.10.008}}.
+
+\bibitem{Dolstra2010NixOS}
+E.~Dolstra, A.~L{\"o}h, and N.~Pierron.
+\newblock {NixOS}: A purely functional linux distribution.
+\newblock {\em Journal of Functional Programming}, 20(5--6):577--615, 2010.
+\newblock \href {https://doi.org/10.1017/S0956796810000195}
+  {\path{doi:10.1017/S0956796810000195}}.
+
+\bibitem{Fikes1972Planex}
+R.~E. Fikes, P.~E. Hart, and N.~J. Nilsson.
+\newblock Learning and executing generalized robot plans.
+\newblock {\em Artificial Intelligence}, 3:251--288, 1972.
+\newblock \href {https://doi.org/10.1016/0004-3702(72)90051-3}
+  {\path{doi:10.1016/0004-3702(72)90051-3}}.
+
+\bibitem{OPA2026GatekeeperOperations}
+{Gatekeeper Contributors}.
+\newblock {\em {Gatekeeper} Operations}.
+\newblock Open Policy Agent, 2026.
+\newblock Official v3.23.0 source snapshot; accessed 30 July 2026.
+\newblock URL:
+  \url{https://github.com/open-policy-agent/gatekeeper/blob/cdf332c3f2762c616d4b6f433712a8d7ed62b3d8/website/docs/operations.md}.
+
+\bibitem{Georgievski2015HTNOverview}
+I.~Georgievski and M.~Aiello.
+\newblock {HTN} planning: Overview, comparison, and beyond.
+\newblock {\em Artificial Intelligence}, 222:124--156, 2015.
+\newblock \href {https://doi.org/10.1016/j.artint.2015.02.002}
+  {\path{doi:10.1016/j.artint.2015.02.002}}.
+
+\bibitem{Ghallab2016PlanningActing}
+M.~Ghallab, D.~Nau, and P.~Traverso.
+\newblock {\em Automated Planning and Acting}.
+\newblock Cambridge University Press, 2016.
+\newblock \href {https://doi.org/10.1017/CBO9781139583923}
+  {\path{doi:10.1017/CBO9781139583923}}.
+
+\bibitem{Hua2024TrustAgent}
+W.~Hua, X.~Yang, M.~Jin, Z.~Li, W.~Cheng, R.~Tang, and Y.~Zhang.
+\newblock {TrustAgent}: Towards safe and trustworthy {LLM}-based agents.
+\newblock In {\em Findings of the Association for Computational Linguistics:
+  EMNLP 2024}, pages 10000--10016. Association for Computational Linguistics,
+  2024.
+\newblock URL: \url{https://aclanthology.org/2024.findings-emnlp.585/}, \href
+  {https://doi.org/10.18653/v1/2024.findings-emnlp.585}
+  {\path{doi:10.18653/v1/2024.findings-emnlp.585}}.
+
+\bibitem{Khattab2024DSPy}
+O.~Khattab, A.~Singhvi, P.~Maheshwari, Z.~Zhang, K.~Santhanam, S.~Vardhamanan,
+  S.~Haq, A.~Sharma, T.~T. Joshi, H.~Moazam, H.~Miller, M.~Zaharia, and
+  C.~Potts.
+\newblock {DSPy}: Compiling declarative language model calls into
+  self-improving pipelines, 2023.
+\newblock Version 1; the versioned preprint is the verified identity used here.
+\newblock URL: \url{https://arxiv.org/abs/2310.03714v1}, \href
+  {http://arxiv.org/abs/2310.03714} {\path{arXiv:2310.03714}}.
+
+\bibitem{Kim2024LLMCompiler}
+S.~Kim, S.~Moon, R.~Tabrizi, N.~Lee, M.~W. Mahoney, K.~Keutzer, and A.~Gholami.
+\newblock An {LLM} compiler for parallel function calling.
+\newblock In {\em Proceedings of the 41st International Conference on Machine
+  Learning}, volume 235 of {\em Proceedings of Machine Learning Research},
+  2024.
+\newblock URL: \url{https://proceedings.mlr.press/v235/kim24y.html}.
+
+\bibitem{Lamb2022ReproducibleBuilds}
+C.~Lamb and S.~Zacchiroli.
+\newblock Reproducible builds: Increasing the integrity of software supply
+  chains.
+\newblock {\em IEEE Software}, 39(2):62--70, 2022.
+\newblock \href {https://doi.org/10.1109/MS.2021.3073045}
+  {\path{doi:10.1109/MS.2021.3073045}}.
+
+\bibitem{LangChain2026LangGraphCompatibility}
+{LangChain}.
+\newblock {\em {LangGraph} Backward Compatibility}.
+\newblock LangChain, 2026.
+\newblock Official documentation snapshot; accessed 30 July 2026.
+\newblock URL:
+  \url{https://github.com/langchain-ai/docs/blob/5b042a059975a17e297b1f121e44870df36b61c9/src/oss/langgraph/backward-compatibility.mdx}.
+
+\bibitem{LangChain2026LangGraphPersistence}
+{LangChain}.
+\newblock {\em {LangGraph} Persistence}.
+\newblock LangChain, 2026.
+\newblock Official documentation snapshot; accessed 30 July 2026.
+\newblock URL:
+  \url{https://github.com/langchain-ai/docs/blob/5b042a059975a17e297b1f121e44870df36b61c9/src/oss/langgraph/persistence.mdx}.
+
+\bibitem{LangChain2026LangGraphRuntime}
+{LangChain}.
+\newblock {\em {LangGraph} Runtime}.
+\newblock LangChain, 2026.
+\newblock Official documentation snapshot; accessed 30 July 2026.
+\newblock URL:
+  \url{https://github.com/langchain-ai/docs/blob/5b042a059975a17e297b1f121e44870df36b61c9/src/oss/langgraph/pregel.mdx}.
+
+\bibitem{Mokhov2018BuildSystems}
+A.~Mokhov, N.~Mitchell, and S.~P. Jones.
+\newblock Build systems {\`a} la carte.
+\newblock {\em Proceedings of the ACM on Programming Languages}, 2(ICFP):1--29,
+  2018.
+\newblock \href {https://doi.org/10.1145/3236774} {\path{doi:10.1145/3236774}}.
+
+\bibitem{W3C2013PROVDM}
+L.~Moreau and P.~Missier.
+\newblock {PROV-DM}: The {PROV} data model.
+\newblock W3c recommendation, World Wide Web Consortium, Apr. 2013.
+\newblock URL: \url{https://www.w3.org/TR/2013/REC-prov-dm-20130430/}.
+
+\bibitem{Necula1997PCC}
+G.~C. Necula.
+\newblock Proof-carrying code.
+\newblock In {\em Proceedings of the 24th ACM SIGPLAN-SIGACT Symposium on
+  Principles of Programming Languages}, pages 106--119. ACM, 1997.
+\newblock \href {https://doi.org/10.1145/263699.263712}
+  {\path{doi:10.1145/263699.263712}}.
+
+\bibitem{Newman2022Sigstore}
+Z.~Newman, J.~S. Meyers, and S.~Torres-Arias.
+\newblock {Sigstore}: Software signing for everybody.
+\newblock In {\em Proceedings of the 2022 ACM SIGSAC Conference on Computer and
+  Communications Security}, pages 2353--2367. ACM, 2022.
+\newblock \href {https://doi.org/10.1145/3548606.3560596}
+  {\path{doi:10.1145/3548606.3560596}}.
+
+\bibitem{Park2004UCON}
+J.~Park and R.~Sandhu.
+\newblock The {UCONABC} usage control model.
+\newblock {\em ACM Transactions on Information and System Security},
+  7(1):128--174, 2004.
+\newblock \href {https://doi.org/10.1145/984334.984339}
+  {\path{doi:10.1145/984334.984339}}.
+
+\bibitem{Prasad2024ADaPT}
+A.~Prasad, A.~Koller, M.~Hartmann, P.~Clark, A.~Sabharwal, M.~Bansal, and
+  T.~Khot.
+\newblock {ADaPT}: As-needed decomposition and planning with language models.
+\newblock In {\em Findings of the Association for Computational Linguistics:
+  NAACL 2024}, 2024.
+\newblock URL: \url{https://aclanthology.org/2024.findings-naacl.264/}, \href
+  {https://doi.org/10.18653/v1/2024.findings-naacl.264}
+  {\path{doi:10.18653/v1/2024.findings-naacl.264}}.
+
+\bibitem{Rundgren2020JCS}
+A.~Rundgren, B.~Jordan, and S.~Erdtman.
+\newblock {JSON} canonicalization scheme ({JCS}).
+\newblock RFC 8785, RFC Editor, June 2020.
+\newblock Informational; a serialization baseline, not a domain-equivalence or
+  path-alias specification.
+\newblock URL: \url{https://www.rfc-editor.org/rfc/rfc8785.html}.
+
+\bibitem{Schneider2000EnforceablePolicies}
+F.~B. Schneider.
+\newblock Enforceable security policies.
+\newblock {\em ACM Transactions on Information and System Security},
+  3(1):30--50, 2000.
+\newblock \href {https://doi.org/10.1145/353323.353382}
+  {\path{doi:10.1145/353323.353382}}.
+
+\bibitem{Serie2026OxyMake}
+E.~S{\'e}ri{\'e}.
+\newblock {OxyMake}: A formally-specified, content-addressable workflow engine,
+  2026.
+\newblock Version 2.
+\newblock URL: \url{https://arxiv.org/abs/2606.20989v2}, \href
+  {http://arxiv.org/abs/2606.20989} {\path{arXiv:2606.20989}}.
+
+\bibitem{Sigstore2026PolicyController}
+{Sigstore Contributors}.
+\newblock {\em {Kubernetes Policy Controller}}.
+\newblock Sigstore, 2026.
+\newblock Official documentation snapshot; accessed 30 July 2026.
+\newblock URL:
+  \url{https://github.com/sigstore/docs/blob/35180becb3f9c68ef39ccab9b4b4616170b3d237/content/en/policy-controller/overview.md}.
+
+\bibitem{SLSA2026Verification}
+{SLSA Community}.
+\newblock {\em {SLSA} v1.2: Verifying Artifacts}.
+\newblock Supply-chain Levels for Software Artifacts, 2026.
+\newblock Approved specification v1.2 snapshot; accessed 30 July 2026.
+\newblock URL:
+  \url{https://github.com/slsa-framework/slsa/blob/19e4e2f005f871270c4f555fc47afecfb37f3efe/docs/spec/v1.2/verifying-artifacts.md}.
+
+\bibitem{Temporal2026EventHistory}
+{Temporal Technologies}.
+\newblock {\em {Temporal Event History}}.
+\newblock Temporal Technologies, 2026.
+\newblock Official documentation snapshot; accessed 30 July 2026.
+\newblock URL:
+  \url{https://github.com/temporalio/documentation/blob/5bb982c4574fb8bab54d776e5ff3264494d88c4c/docs/encyclopedia/event-history/event-history.mdx}.
+
+\bibitem{Bazel2026RemoteExecution}
+{The Bazel Authors}.
+\newblock {\em {Remote Execution API}, Version 2.12.0}.
+\newblock Bazel, 2026.
+\newblock Protocol Buffers specification; tag v2.12.0; accessed 29 July 2026.
+\newblock URL:
+  \url{https://github.com/bazelbuild/remote-apis/blob/9e084d0e43e717128ee72b5be584a7ba33e8006b/build/bazel/remote/execution/v2/remote_execution.proto}.
+
+\bibitem{Kubernetes2026Admission}
+{The Kubernetes Authors}.
+\newblock {\em Admission Control in {Kubernetes}}.
+\newblock Kubernetes, 2026.
+\newblock Kubernetes v1.36 documentation snapshot; accessed 30 July 2026.
+\newblock URL:
+  \url{https://github.com/kubernetes/website/blob/65a8302b72fc82fe7c15829462b2ac31891813ea/content/en/docs/reference/access-authn-authz/admission-controllers.md}.
+
+\bibitem{Torres2019inToto}
+S.~Torres-Arias, H.~Afzali, T.~K. Kuppusamy, R.~Curtmola, and J.~Cappos.
+\newblock in-toto: Providing farm-to-table guarantees for bits and bytes.
+\newblock In {\em 28th USENIX Security Symposium}, 2019.
+\newblock URL:
+  \url{https://www.usenix.org/conference/usenixsecurity19/presentation/torres-arias}.
+
+\bibitem{Trooskens2026CompiledAI}
+G.~Trooskens, A.~Karlsberg, A.~Sharma, L.~{De Brouwer}, M.~{Van Puyvelde},
+  M.~Young, J.~Thickstun, G.~Alterovitz, and W.~A. {De Brouwer}.
+\newblock Compiled {AI}: Deterministic code generation for {LLM}-based workflow
+  automation, 2026.
+\newblock URL: \url{https://arxiv.org/abs/2604.05150v1}, \href
+  {http://arxiv.org/abs/2604.05150} {\path{arXiv:2604.05150}}.
+
+\bibitem{VanDerAalst1998Workflow}
+W.~M.~P. van~der Aalst.
+\newblock The application of petri nets to workflow management.
+\newblock {\em Journal of Circuits, Systems and Computers}, 8(1):21--66, 1998.
+\newblock \href {https://doi.org/10.1142/S0218126698000043}
+  {\path{doi:10.1142/S0218126698000043}}.
+
+\bibitem{Wang2025MI9}
+C.~L. Wang, T.~Singhal, A.~Kelkar, and J.~Tuo.
+\newblock {MI9}: An integrated runtime governance framework for agentic {AI},
+  2025.
+\newblock Version 4; presented at the AAAI 2026 Workshop on Trust and Control
+  in Agentic AI.
+\newblock URL: \url{https://arxiv.org/abs/2508.03858v4}, \href
+  {http://arxiv.org/abs/2508.03858} {\path{arXiv:2508.03858}}.
+
+\bibitem{Wang2026AgentSpecRuntime}
+H.~Wang, C.~M. Poskitt, and J.~Sun.
+\newblock {AgentSpec}: Customizable runtime enforcement for safe and reliable
+  {LLM} agents, 2025.
+\newblock Version 3; arXiv metadata reports acceptance at ICSE 2026, but this
+  entry claims only the verified preprint identity.
+\newblock URL: \url{https://arxiv.org/abs/2503.18666v3}, \href
+  {http://arxiv.org/abs/2503.18666} {\path{arXiv:2503.18666}}.
+
+\bibitem{Wang2026AgentTraces}
+Y.~Wang, J.~Zhang, T.~Cai, Z.~Liu, Q.~Sun, Z.~Sun, Z.~Wu, M.~Dong, M.~Zheng,
+  X.~Yin, and Y.~Zhu.
+\newblock From agent traces to trust: A survey of evidence tracing and
+  execution provenance in {LLM} agents, 2026.
+\newblock Version 4.
+\newblock URL: \url{https://arxiv.org/abs/2606.04990v4}, \href
+  {http://arxiv.org/abs/2606.04990} {\path{arXiv:2606.04990}}.
+
+\bibitem{Xu2026EvoMAS}
+C.~Xu, K.~Ke, Z.~Liu, J.~Wei, Z.~Shao, W.~Guo, and C.~Yu.
+\newblock {EvoMAS}: Learning execution-time workflows for multi-agent systems,
+  2026.
+\newblock URL: \url{https://arxiv.org/abs/2605.08769v1}, \href
+  {http://arxiv.org/abs/2605.08769} {\path{arXiv:2605.08769}}.
+
+\bibitem{Yao2023ReAct}
+S.~Yao, J.~Zhao, D.~Yu, N.~Du, I.~Shafran, K.~Narasimhan, and Y.~Cao.
+\newblock {ReAct}: Synergizing reasoning and acting in language models, 2022.
+\newblock Version 3; the versioned preprint is the verified identity used here.
+\newblock URL: \url{https://arxiv.org/abs/2210.03629v3}, \href
+  {http://arxiv.org/abs/2210.03629} {\path{arXiv:2210.03629}}.
+
+\bibitem{IETF2000RFC2753}
+R.~Yavatkar, D.~Pendarakis, and R.~Guerin.
+\newblock A framework for policy-based admission control.
+\newblock RFC 2753, Internet Engineering Task Force, 2000.
+\newblock Informational.
+\newblock URL: \url{https://www.rfc-editor.org/rfc/rfc2753}.
+
+\bibitem{Younes2003VHPOP}
+H.~L.~S. Younes and R.~G. Simmons.
+\newblock {VHPOP}: Versatile heuristic partial order planner.
+\newblock {\em Journal of Artificial Intelligence Research}, 20:405--430, 2003.
+\newblock \href {https://doi.org/10.1613/jair.1136}
+  {\path{doi:10.1613/jair.1136}}.
+
+\bibitem{Zhang2025AFlow}
+J.~Zhang, J.~Xiang, Z.~Yu, F.~Teng, X.~Chen, J.~Chen, M.~Zhuge, X.~Cheng,
+  S.~Hong, J.~Wang, B.~Zheng, B.~Liu, Y.~Luo, and C.~Wu.
+\newblock {AFlow}: Automating agentic workflow generation, 2024.
+\newblock Version 3; the versioned preprint is the verified identity used here.
+\newblock URL: \url{https://arxiv.org/abs/2410.10762v3}, \href
+  {http://arxiv.org/abs/2410.10762} {\path{arXiv:2410.10762}}.
+
+\bibitem{Zhuge2024GPTSwarm}
+M.~Zhuge, W.~Wang, L.~Kirsch, F.~Faccio, D.~Khizbullin, and J.~Schmidhuber.
+\newblock {GPTSwarm}: Language agents as optimizable graphs.
+\newblock In {\em Proceedings of the 41st International Conference on Machine
+  Learning}, volume 235 of {\em Proceedings of Machine Learning Research},
+  pages 62743--62767. PMLR, 2024.
+\newblock URL: \url{https://proceedings.mlr.press/v235/zhuge24a.html}.
+
+\end{thebibliography}

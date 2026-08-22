@@ -1,0 +1,38 @@
+{
+  "schema": "agent-graph-runtime.release-clearance.v1",
+  "status": "approved",
+  "target_version": "v1.0-preprint",
+  "public_license": {
+    "spdx_id": "MIT AND CC-BY-4.0",
+    "license_file": "LICENSE",
+    "license_sha256": "8ae0192a3b155bddf5249153d63eba52aab1a4cbbd3a128935087fbda2c41576",
+    "canonical_license_url": "https://spdx.org/licenses/MIT.html https://creativecommons.org/licenses/by/4.0/legalcode",
+    "license_text_attestation": "author_verified_official_text",
+    "applies_to": [
+      "agent-graph-runtime-v1.0-preprint-source.zip",
+      "paper-v1.0-preprint.pdf"
+    ],
+    "author_selected": true
+  },
+  "stable_release_locator": {
+    "kind": "arxiv",
+    "url": "pending",
+    "verified_at": "pending",
+    "pending_addendum": "Locator amendment, dated 2026-08-21 by Rashid Azarang, sole author: arxiv.org pending, bound by addendum within 72h of ID assignment. The clearance rule requires a locator that already resolves, which cannot be satisfied before the arXiv submission exists. This clearance is approved on every other field as of 2026-08-21; the resolving arxiv.org/abs/ URL and its verified_at replace these markers by dated addendum within 72 hours of the identifier being assigned. Mirrors the release-day ordering used on P1. See VERSION-IDENTITY-RESOLUTION-2026-08-21.md section 4."
+  },
+  "activity_data": {
+    "publication_basis": "author_operator_consent",
+    "author_operator": "Rashid Azarang",
+    "consent_granted": true,
+    "scope": "publication of timestamp-bearing run identifiers and activity telemetry in the v1.0-preprint PDF, source archive, and reproducibility artifacts derived from the bound v0.9.9 inputs",
+    "recorded_at": "2026-08-21T00:00:00+00:00",
+    "bound_artifacts": {
+      "REPRODUCIBILITY-SUPPLEMENT.md": "ace99a5ac08c3d4866ee378ec823561ec525170345a4a440c8d2165c9e77bef1",
+      "paper-v0.9.10-internal.pdf": "231a7330cbab0d1ea99bb39ca7c826988efe4fe208114e547a33ba18b84ecab2",
+      "paper.tex": "912c0f95af7f7198df8d878a8c90c785740e5f8ca9c3c2eed7e369f20179c6dc",
+      "references.bib": "a8b5bc235be370f805ac37bd8f330e791528c3918e7bc425ef373f53e43a839b",
+      "results/generated-results.tex": "491c717d93f89e1faf83da0abf54830a875e01c536eac51c41c30317cb193594",
+      "results/pilot-reproduction.json": "e5fa4a3cec8e778a61441407a6b054477606fdfa1e319c55cf66a956f07a7100"
+    }
+  }
+}

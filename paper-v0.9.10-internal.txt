@@ -1,0 +1,1917 @@
+                     The Agent Graph Runtime
+            A Uniﬁed Model for Static, Dynamic, and Hybrid Execution
+
+
+                                       Rashid Azarang
+
+                           v0.9.10-internal · 14 August 2026
+
+
+ Internal preprint. Six sealed certiﬁcation epochs (r1–r6) were attempted;
+none produced a certiﬁable review, and the two that reached adjudication
+   (r3, r6) returned noncompliant on producer conduct. Every record is
+     preserved and disclosed in Appendix A. By dated author decision
+(2026-08-14), certiﬁcation is no longer a release precondition; disclosure of
+   the six-epoch record, incorporation of the r6 uncertiﬁed blind-review
+  dispositions, and the author’s explicit release act are. That act has not
+                      occurred; not for dissemination.
+
+
+                                           Abstract
+
+    Agent systems are often classiﬁed as static workﬂows, dynamic planners, or hybrid arrange-
+ments. Those labels conﬂate when a graph is constructed, where it becomes immutable and ad-
+dressable, how it is authored, and what executes it. This paper deﬁnes an agent graph runtime
+model in which those concerns are separately speciﬁed lifecycle coordinates over a constrained
+feasible region and a shared executable representation and execution substrate. Static, dynamic
+one-shot, staged-direct, and staged-scaﬀold conﬁgurations are reference points in that region,
+not necessarily distinct runtimes. The model does not assert that every Cartesian combination
+is meaningful or implementable.
+    The model separates construction, lowering, qualiﬁcation, freezing, requaliﬁcation, admission,
+execution, and evidence. It also separates properties that are easily confused: executable graph
+identity, execution environment identity, output reproducibility, plan adequacy, and outcome
+correctness. Mentu is the paper’s author-checked architectural instantiation of the strict-DAG
+admitted agent-graph proﬁle. At the current architecture snapshot, MentuExecutionGraphCore
+owns the normalized executable, lowering, qualiﬁcation, admission, lifecycle evidence, and DAG
+scheduler; engine adapters supply host eﬀects. Mentu also retains persistent recipe and inter-
+preted workﬂow compatibility proﬁles with diﬀerent assurance contracts. One current cross-
+proﬁle boundary remains explicit: a generated persistent projection can be rediscovered by
+legacy recipe dispatch without a named adoption transition. The unmodiﬁed projection has no
+auto_mode marker; for either CLI-auto Boolean, ordinary dispatch constructs the raw runner
+and enters legacy authority. More generally, every cell of the two-by-two recipe-auto/CLI-auto
+matrix that passes its applicable precondition does so. The sole conditional committed-recipe
+existence gate is not Core qualiﬁcation or admission. The product integration therefore does not
+yet enforce the model’s projection-is-not-adoption rule. The admitted Core path remains that
+instantiation; the exception is not generalized to that path or hidden as uniform product-wide
+conformance. A separate exact-archive, author-side run at the current source pin passes 25/25
+targeted tests across 13 ﬁlters, including lowering parity, canonicalization, admission identity
+and drift, saved-plan execution, and an admitted vertical slice. The suite does not execute an
+
+                                                1
+     ordinary static recipe and a generated graph through one common Core admission route, so it
+     is not evidence of product-wide executed cross-origin parity.
+         A frozen historical C30 pilot is reported as a mechanical invariant exercise, not a treatment
+     comparison. It reports identity equality for all ﬁve qualiﬁed persistent projections. Two of those
+     projections were not selected for execution after contemporaneous human semantic rejection; the
+     remaining three attempted saved-plan transitions all reached admission and retained identity.
+     There were zero exclusions within each reported attempted transition, not zero attrition across
+     the full projection-to-execution funnel. It also reports zero recorded graph-planner dispatches
+     during those three executions and sealed-manifest integrity; three historical C30-derived con-
+     trols and one separate current-Core control exercise their named detector paths. The same pilot
+     retains negative evidence: mechanically qualiﬁed plans failed human semantic review, and a me-
+     chanically successful artifact later required semantic correction. No matched static or dynamic
+     observations and no unchanged-state repetition series exist, so comparative superiority, amor-
+     tization, and generality claims are excluded. The v0.9.5 return reported 95 literature records
+     and 44 review ﬁndings, including 14 majors; independent audit found ﬁve copy-contaminated
+     RFC author ﬁelds and only 34 honest matches for that version’s 37 citations. The v0.9.6 full
+     raw gate failed. The v0.9.7 submitted ﬁles pass their structural validator and its blind review
+     reports 21 ﬁndings, including six majors, but trace audit invalidates the run’s process claims
+     and independent source audit ﬁnds an RFC 2748 ﬁrst-author mismatch. The v0.9.8 attempt
+     correctly stopped before either review when it could not produce an independently observed
+     trace audit. These returns are bounded advisory or instrument-diagnostic evidence, not litera-
+     ture certiﬁcates or release authorization. Novelty remains uncertiﬁed. Fresh review of this exact
+     PDF and supplement, plus a detached supplied-export audit, remains a release gate.
+
+Keywords: agent runtime; execution graph; artifact admission; content-addressed execution;
+provenance; planner–executor separation
+
+
+1    Introduction
+
+An agent that performs consequential work has at least two conceptually diﬀerent problems. It
+must decide what work is to be done, and it must enact that decision under bounded authority.
+In small demonstrations both problems can be hidden inside one prompt or one tool loop. In a
+systems setting they create diﬀerent artifacts, failure modes, and review obligations. A planner
+may construct an unsuitable graph even when the executor correctly enforces every mechanical
+contract. Conversely, a suitable plan may be executed under the wrong authority, against changed
+state, or through a path that cannot bind its eﬀects back to the inspected artifact.
+The familiar labels static, dynamic, and hybrid are too coarse to locate these distinctions. “Dy-
+namic” may mean task-time graph construction, runtime choice among already-declared branches,
+or mutation of the topology during execution. “Hybrid” may mean only that construction and ex-
+ecution occur in diﬀerent invocations, or it may imply a second runtime. “Workﬂow” adds another
+ambiguity: it can denote a business process, an authoring notation, a script interpreted at runtime,
+or the lowered executable structure. Treating those meanings as synonyms turns an architectural
+boundary into a naming preference.
+This paper takes the agent graph lifecycle as the unit of analysis. It asks which transformations and
+authority transitions connect an authored source to an eﬀectful run and its evidence. The central
+thesis is deliberately narrow:
+
+     One execution substrate can support multiple graph-lifecycle policies. A system is
+
+                                                     2
+      uniﬁed at this level when diﬀerent construction and freeze policies lower to a shared
+      executable representation and run through common execution machinery. This does
+      not require their authoring interfaces or authority-entry paths to be identical.
+
+The paper contributes four bounded results. First, it supplies a construct model and a policy
+vector that place reference static, dynamic, and staged conﬁgurations in one space. Second, it
+states invariants for identity, qualiﬁcation, freeze, admission, execution, and evidence, including a
+scope theorem that marks the edge of one frozen graph epoch. Third, it maps those constructs to
+current committed Mentu source and identiﬁes an extracted admitted execution-graph Core with a
+public API, diﬀerentiated compatibility proﬁles, and one unresolved projection-adoption transition.
+Fourth, it reports a historical C30 invariant-exercise pilot, plus disposable seeded detector controls,
+while preserving the pilot’s null and negative ﬁndings.
+These are architecture, implementation, formal-implication, and pilot observation claims. They are
+not evidence that staged execution improves task success, cost, latency, maintenance, or regression
+rates. They do not imply deterministic model output, plan adequacy, or outcome correctness. They
+do not establish generality beyond Mentu, and the historical C30 epoch is not pooled with the
+current architecture epoch. The internal version makes no priority or exclusive novelty claim. It
+likewise makes no claim that Mentu is globally ﬁrst, best, or superior to every other agent runtime.
+
+
+2    Related work and discriminant positioning
+
+Review status. The exact-input v0.9.5 Operon return contains 95 records—59 retained, 30 back-
+ground, three counterexamples, and three exclusions—and a separate blind context returned 44
+ﬁndings, including 14 major ﬁndings. Its closed-tree, input-binding, isolation, and ﬁle-open val-
+idators pass. That process result does not establish bibliographic correctness. Independent audit
+found ﬁve RFC entries whose author ﬁeld was copy-contaminated with “The Bazel Authors,” only
+34 honest entity-level matches for the v0.9.5 manuscript’s 37 bibliography entries, and a live Kuber-
+netes page substituted for the pinned bytes cited here. Two LangGraph documents and the cited
+2019 in-toto paper have no one-to-one registry row. A release crosswalk is therefore impossible
+without fabrication, which this paper refuses.
+The compliant raw return is retained as bounded discovery and blind-review evidence. Its mech-
+anism coding is advisory because the search report itself records that close full-text reading was
+not completed. Earlier independently veriﬁed citation records remain claim-speciﬁc inputs, but
+neither an earlier review nor a same-work preprint silently certiﬁes the source version cited in this
+revision. No corpus count, matrix blank, or “closest found” judgment establishes priority, exhaus-
+tive coverage, or a unique conjunction. The v0.9.5 blind review recommends major revision. The
+later v0.9.7 repository projection has a 43/43 cite-key-to-bibliography-key identity crosswalk, but
+that does not certify rendered author, venue, pagination, or publisher ﬁelds. Its Operon session is
+non-certifying under trace audit despite a green structural validator. novelty_certified remains
+false the ﬂag is read from the repository artifact results/citation-verification-v098.json
+(sha256 62a80d37...), named here because that artifact sits outside any blind-review surface (ﬁnd-
+ing BR9-007) and fresh literature veriﬁcation and blind review of this exact PDF remain required
+for release.
+
+
+
+
+                                                  3
+Design-space and workﬂow precedents. The method of separating apparently monolithic
+systems into design coordinates is established. Build Systems à la Carte factors build systems
+into components and uses that factorization to compare designs [20]. We adopt that design-space
+discipline without assuming a full Cartesian product or claiming the move as novel. Pegasus
+distinguishes an abstract, resource-independent workﬂow from the executable workﬂows produced
+while mapping it to distributed infrastructure [7]. This is a clear precedent for separating source
+intent from executable form. Petri-net workﬂow soundness is deﬁned over a net together with
+its ﬁring semantics, not inferred from a topology label alone [36]. We therefore do not equate
+“workﬂow” with “DAG.”
+
+
+Graph runtime, persistence, and compatibility. LangGraph’s oﬃcial documentation speci-
+ﬁes a graph runtime, checkpoint-based persistence, and an explicit backward-compatibility contract
+[19, 18, 17]. These are positive precedents for stateful graph execution, durable checkpoints, and
+version-evolution policy. This paper treats those capabilities as established runtime mechanisms
+and separately speciﬁes its discriminants for executable identity, lifecycle freeze, and pre-eﬀect
+artifact admission.
+
+
+Deﬁne-by-run, tracing, and staged graph extraction. Dynamic construction followed by
+extraction of an executable graph is an established systems pattern, not a contribution of this paper.
+TensorFlow Eager combines imperative execution with a just-in-time tracer that translates Python
+functions into executable dataﬂow graphs [1]. That precedent directly occupies construction/freeze
+coordinates adjacent to the staged policies here. The remaining distinction is narrower: whether
+the extracted executable is independently addressable across invocations and whether a pre-eﬀect
+transition binds its identity, qualiﬁcation, authority, and concrete run context. The paper therefore
+claims a lifecycle-and-admission synthesis, not invention of deﬁne-by-run, graph tracing, staging,
+caching, or graph reuse.
+
+
+Planning, acting, and agent control. Planning and acting have long been treated as separate
+but interacting problems [12]. Hierarchical task-network and partial-order planning supply estab-
+lished formalisms for decomposition and least-commitment action structure [11, 43]. In this paper,
+that action structure is the candidate graph g; a saved plan is the addressable lifecycle record z
+that may bind g, its lowering, qualiﬁcation context, and executable identity.
+Agent systems occupy several points in the lifecycle region. ReAct interleaves reasoning and action
+[41]. LLMCompiler separates a function-calling planner, task-fetching unit, and executor, but its
+task graph is an in-process structure rather than the cross-invocation, content-addressed freeze
+used here [15]. DSPy separates declarative language-model modules from compilation into an op-
+timized program; that is a strong authoring/lowering precedent, not evidence of a run-speciﬁc
+admission receipt [14]. AFlow searches over code-represented workﬂows using execution feedback
+[44], while ADaPT decomposes on executor failure [25]. These works establish interleaved con-
+trol, planner–executor separation, compilation, and adaptive construction. GPTSwarm represents
+language-agent systems as optimizable graphs [45]; Open Agent Speciﬁcation deﬁnes one portable
+agent description across several runtimes [2]; and Compiled AI separates generation and validation
+from later execution [35]. Xu et al.’s execution-time EvoMAS marks the other boundary: graph
+construction can continue during execution [40]. Our discriminants ask narrower systems ques-
+tions: whether an executable is addressable across invocations, whether inspected identity survives
+
+
+                                                  4
+an authority transition, and whether topology change starts a new admitted epoch. The Com-
+mon Workﬂow Language supplies a portable declarative workﬂow standard with explicit runtime-
+environment descriptions and execution across multiple implementations [6]. It is therefore a direct
+precedent for separating authoring syntax from portable execution, while this paper separately
+studies identity-bearing admission of an agent graph.
+
+
+Stored plans, identity, and replay. PLANEX already combined stored generalized plans, pre-
+condition monitoring, and re-entry to planning on failure [9]; staged construct–check–execute is
+therefore not new in isolation. Nix demonstrates input-derived identity over declared build inputs,
+while reproducible-build work distinguishes that identity from bit-identical outputs [8, 16]. Those
+precedents narrow the identity contribution: this paper’s move is to state the placement rule for an
+agent executable and residual run environment, then keep plan adequacy and outcome correctness
+as separate non-implications. Durable Functions gives deterministic event-history replay semantics
+for stateful orchestration [4]; Temporal records a durable event history and replays workﬂow code to
+restore execution state after failure [31]. The present frozen-graph claim is diﬀerent: it constrains
+graph construction during one admitted epoch and does not promise replay-equivalent eﬀects.
+Bazel’s Remote Execution API content-addresses declared actions and uses action digests for cache
+lookup [32]. OxyMake is a close identity-and-evidence neighbor in the bounded review: it speciﬁes
+a content-addressed plan of record, append-only audit state, and programmatic gate approval
+[28]. The present model asks whether whole-executable identity, mechanical qualiﬁcation, authority
+envelope, and concrete run context are jointly bound by a pre-eﬀect receipt. This paper has not
+evaluated OxyMake conjunct-by-conjunct against that question and makes no claim that it lacks
+any conjunct. The comparison names an inspected neighbor; it does not assert structural uniqueness
+or exhaustive priority.
+
+
+Admission and evidence precedents. “Admission control” conventionally includes resource
+and QoS decisions made through policy decision and enforcement points [42]. We use artifact
+admission for a narrower pre-eﬀect authority transition that binds an executable identity to a
+run context; it is not a network resource reservation claim. Usage-control models provide a further
+analogue for rechecking mutable attributes and continuing authorization [24]. Kubernetes admission
+explicitly includes mutating and validating hooks [33]. Artifact admission here is the narrower non-
+mutating case: a mutation creates a new executable that must return to qualiﬁcation before it can
+receive authority. Proof-carrying code places a producer-supplied proof against a receiver-deﬁned
+safety policy before execution [22]. It is a strong pre-execution policy analogue, not an equivalence:
+this paper’s mechanical qualiﬁcation does not claim the semantic force of a safety proof. Runtime
+monitoring results also bound what a particular enforcement mechanism can guarantee [27].
+Supply-chain veriﬁcation is an even closer operational neighbor. SLSA speciﬁes veriﬁcation of
+artifact provenance against trusted builders and expected parameters [30]; Sigstore supplies signing
+and transparency infrastructure [23], while its policy controller validates signatures and attestations
+during Kubernetes admission [29]. Gatekeeper provides policy-as-code validation and mutation
+operations around Kubernetes admission [10]. These systems establish pre-use artifact veriﬁcation,
+signature/attestation policy, and admission enforcement. The paper does not claim they lack its
+conjuncts; it asks a diﬀerent synthesis question about binding a complete agent executable, its
+qualiﬁcation, and its concrete run context to authority on a shared execution substrate.
+in-toto uses signed layouts, authorized functionaries, and link metadata to verify a software supply-
+
+
+                                                  5
+chain history before artifact acceptance [34]. It is a close authority-and-evidence analogue, but does
+not itself supply the shared agent-graph execution substrate or authoring-coordinate model deﬁned
+here. PROV-DM provides a standard vocabulary for entities, activities, agents, derivation, and
+responsibility [21]. That vocabulary supports lineage, but delegation and responsibility records do
+not enact artifact admission, and provenance alone does not establish executable identity, output
+reproducibility, plan adequacy, or outcome correctness.
+This revision does not pretend to be an exhaustive orchestrator survey. Dagster, Prefect, Argo, and
+Airﬂow remain named coverage candidates for the fresh literature pass; no absence or uniqueness
+inference depends on them.
+The paper uses supply-chain vocabulary narrowly. An admission receipt is an authorizing record
+emitted before host eﬀects and bound to the admitted artifact and context. A sealed manifest or
+activation record is a retrospective attestation: evidence about what was activated or produced.
+Neither term implies a digital signature unless the realization supplies one, and retrospective evi-
+dence cannot substitute for pre-eﬀect authority.
+Recent agent-governance systems enforce or monitor policies around action: AgentSpec supplies
+customizable runtime enforcement [38]; TrustAgent places safety checks before, during, and after
+planning [13]; MI9 models continuous authorization [37]; and SARC proposes pre-action architec-
+tural governance [3]. These are enforcement neighbors, not evidence that qualiﬁcation and artifact
+admission are synonymous. The agent-provenance literature studies retrospective execution evi-
+dence [39], whereas the executable graph here is a prospective control object whose later evidence
+is separately sealed.
+
+
+Operational discriminants. We position a mechanism only through ﬁve questions: (1) when
+graph structure is constructed; (2) whether an immutable executable becomes independently ad-
+dressable across invocations; (3) whether authoring method is speciﬁed separately from runtime
+authority; (4) whether distinct origins converge on the same runner and scheduling semantics; and
+(5) whether a pre-eﬀect transition binds executable, qualiﬁcation, authority, and run context. These
+predicates are not a novelty score. The contribution claimed here is the explicit lifecycle synthesis,
+its source-grounded mapping to Mentu, and a mechanical invariant exercise—not graphs, planning
+before action, lowering, policy checks, content identity, or provenance in isolation.
+Table 1 replaces an earlier asymmetric feature matrix. It records only positive mechanism prece-
+dents supported by the cited primary or oﬃcial source; it does not code uninspected absence. The
+ﬁnal row is the paper’s current implementation mapping, not a literature claim.
+
+
+3    Agent graph runtime model
+
+Constructs
+
+An agent graph is a typed control structure
+
+                                        G = (V, E, λ, κ, σg ),
+
+where V is a set of action or decision nodes, E is a set of typed coordination relations, λ binds node
+behavior, κ carries contracts and authority requirements, and σg deﬁnes graph-declared scheduling
+semantics. This deﬁnition does not require acyclicity. A particular runtime may accept only a
+
+                                                  6
+Mechanism family          Primary or oﬃcial anchors        Established precedent or paper role
+Design-space              Build Systems à la Carte;        Factorized design coordinates and a
+decomposition and         Pegasus; CWL [20, 7, 6]          distinction between abstract and
+lowering                                                   resource-mapped or portable executable form
+Deﬁne-by-run and          TensorFlow Eager [1]             Imperative construction, graph extraction,
+traced graph extraction                                    and staged execution within one system are
+                                                           direct positive precedents; addressability and
+                                                           admission remain separate discriminants
+Stateful graph runtime    LangGraph runtime,               Graph execution, checkpointed state, and
+and persistence           persistence, and compatibility   explicit compatibility policy are established
+                          documentation [19, 18, 17]       operational mechanisms
+Planning, stored plans,   PLANEX; LLMCompiler; Xu et       Stored-plan execution, planner–executor
+and adaptive              al.’s execution-time EvoMAS      separation, and execution-time topology
+construction              [9, 15, 40]                      adaptation are established mechanisms
+Content identity and      Nix; Bazel REAPI; reproducible   Declared-input identity, bit-reproducibility,
+replay                    builds; Durable Functions;       and deterministic event replay are distinct
+                          Temporal [8, 32, 16, 4, 31]      precedent classes
+Pre-eﬀect policy and      PCC; Kubernetes; SLSA;           Pre-execution checking, provenance
+authority                 Sigstore policy-controller;      veriﬁcation, admission hooks, policy-as-code,
+                          Gatekeeper; AgentSpec; SARC      and agent action governance precede the
+                          [22, 33, 30, 29, 10, 38, 3]      narrower artifact-admission construct
+Provenance and            in-toto; Sigstore; PROV-DM       Authenticated supply-chain history and
+accountable evidence      [34, 23, 21]                     standardized provenance vocabularies precede
+                                                           the paper’s evidence layer
+Author-checked Mentu      Current committed-source         Instantiates the paper’s strict-DAG admitted
+instantiation             census and Core tests (Section   proﬁle; it is not evidence of priority or
+                          6)                               comparative rank
+
+Table 1: Positive-only precedent map. Each scholarly row states a mechanism that its cited source estab-
+lishes. No blank cell or omitted system supports an absence, uniqueness, or novelty inference.
+
+
+
+
+                                                      7
+strict DAG, while another may admit cycles, event-triggered transitions, or bounded iteration.
+Any operation that creates G, adds or removes a member of V or E, or mutates an eﬀect-bearing
+value in λ, κ, or σg is construction-lane activity. Selecting a ready node under an unchanged,
+already admitted σg is execution scheduling, not graph construction.
+Lowering combines the graph with an eﬀective execution policy P to produce an eﬀect-semantic
+executable payload
+                                   χ = (V, E, λ, κ, σg , P ),
+where P contains only runner-consumed choices ﬁxed in the executable, such as a frozen back-
+end/model selector, limits, and other executable-bound policy. Granted permissions, credentials,
+sandbox/approval posture, and admission-resolved routing are not moved into P . A separate arti-
+fact header
+                                  ν(x) = (νL (x), νC (x), νβ (x))
+names the lowerer, canonicalizer, and binding-schema versions. The executable artifact is x =
+(ν(x), χ). This split is intentional: a semantics-preserving toolchain bump need not be called
+graph-semantic, yet the artifact can still bind the interpretation contract under which its bytes
+were produced.
+A workﬂow describes process intent or control semantics and may be authored in a domain-speciﬁc
+notation or program. It is not automatically an agent graph. A plan is an addressable lifecy-
+cle artifact that records the candidate, its lowering and qualiﬁcation context, and the executable
+identity needed for later requaliﬁcation. A state machine speciﬁes states and transition rules; it
+may implement scheduling or be compiled into a graph. An executable intermediate representation
+(IR) is the normalized form consumed by the runner. An authoring method changes how a source
+is produced; it grants no runtime authority by itself. “Proﬁle” is reserved below for a complete
+runtime compatibility surface, while ψ names an assurance contract.
+Let o be an objective, s observed repository and conﬁguration state, a an external authority en-
+velope, g a candidate graph, x canonical executable IR, q a qualiﬁcation report, z the frozen plan
+container, c a concrete admission-time runtime context, η the bindable residual environment, ξ ex-
+ogenous state not bindable at admission, r an admission receipt, y an execution trace and output,
+and e the resulting evidence. For an externally pinned toolchain and schema proﬁle ν̄ = (ν̄L , ν̄C , ν̄β ),
+the maximal staged lifecycle is typed as
+
+                                         g = Constructπ (o, s0 , a),
+                                         x = Lowerν̄ (g, P ),
+                                         q = Qualifyν̄ (x, a, s0 ),
+                                         z = Freeze(x, q, s0 ),
+                            (xrq , qrq , c1 ) = Requalifyν̄ (z, a, s1 ),
+                                         r = Admit(xrq , qrq , a, c1 ),
+                                         y = Runρ (xrq , r),          e = Seal(y, r).
+
+The tuple accepted by each operator is now explicit; the notation does not pretend that freezing
+consumes a qualiﬁcation report while losing the executable it must preserve. Mechanical qualiﬁ-
+cation here means the declared schema, dependency, contract, and budget checks performed by
+the runtime. It is not equipment, process, or tool qualiﬁcation in the regulated engineering sense
+and does not certify ﬁtness for a regulated use. The residual environment η is projected only after
+the qualiﬁcation and concrete runtime context it binds are available; it is not an input to initial
+
+                                                         8
+qualiﬁcation. Not every policy exposes every stage as a separate invocation. Dynamic one-shot
+construction may pass from qualiﬁcation to admission without an operator-visible artifact. Static
+execution begins with a source frozen before the measured invocation. The model’s claim is that
+those policy diﬀerences need not change ρ.
+
+Symbol                      Meaning
+χ                           Eﬀect-semantic executable payload (V, E, λ, κ, σg , P )
+ν, ν̄                       Artifact header and externally selected compatible lowerer/canonicalizer/binding-schema
+                            proﬁle
+β, Dβ , pβ                  Declared ﬁeld inventory, placement map, and ﬁeld-equivalence relations
+Fν , Fχ , Fη                Header, executable-payload, and residual-environment ﬁeld partitions
+xrq , xsucc                 Requaliﬁed executable and a semantically mutated successor requiring a new identity
+µ, ψ, ρ                     Authoring method, assurance contract, and execution substrate
+
+        Table 2: Core notation. Symbols not listed here are introduced locally in the lifecycle deﬁnition.
+
+Admission is non-mutating and identity-preserving: it either refuses or emits a receipt binding the
+unchanged executable. An admission mechanism that changes an eﬀect-semantic executable ﬁeld
+has produced a successor xsucc , which must be requaliﬁed and admitted under its own identity
+before eﬀectful dispatch. Mutation cannot be hidden inside the authority transition in this model.
+
+
+        One substrate, explicit graph lifecycle
+        Lifecycle coordinates and assurance contracts are separately specified from the shared execution core.
+
+
+
+
+        Construct            Lower                  Qualify               Freeze                  Requalify        Admit                Execute         Evidence
+        source → proposal    executable graph       shape + authority     addressable bytes       drift checks     runtime authority    shared runner   sealed artifacts
+
+
+
+
+                                                           Optional cross-profile reuse
+                                                           project · explicit adoption required · requalify
+
+                                                Mentu's conditional legacy rediscovery route is disclosed as not enforcing this rule.
+
+
+                                Common execution substrate
+                                closed executable · qualification · admission · scheduler · evidence
+
+
+
+                             Lifecycle policy changes the path into the substrate—not necessarily the substrate itself.
+
+
+
+
+Figure 1: The maximal graph lifecycle. Policy changes occur before execution; the common substrate
+executes the qualiﬁed graph, while authority-entry convergence is evaluated separately.
+
+
+
+
+                                                                                              9
+Binding schema, artifact header, and non-equivalent identities
+
+Let the binding schema selected by the external pin be
+
+                                     βν̄β = (Dβ , pβ , {≈f }f ∈Dβ , type).
+
+Here Dβ inventories declared bindable ﬁelds independently of the artifact and receipt encoders,
+while
+               pβ : Dβ → {ν, χ, η},    Fkβ = p−1
+                                               β (k),    Dβ = Fνβ ˙∪ Fχβ ˙∪ Fηβ .
+
+The exact-match identity-header class is Fνβ = {νL , νC , νβ }; Fχβ contains payload ﬁelds and Fηβ
+contains residual environment ﬁelds bound at admission. Superscripts are omitted when β is ﬁxed.
+Field types and per-ﬁeld equivalence relations are declared independently of the canonicalizer. The
+mandatory payload core is
+                                     {V, E, λ, κ, σg , P } ⊆ Fχ .
+
+Placement uses separate substitution domains. Intrinsic executable semantics
+                                                     (            )
+                                           Iρ (χ) = Lρ (χ), Kρχ
+
+contains the unﬁltered language of control, proposal, veriﬁcation, and attempted-eﬀect traces and
+any executable-bound transition law. Holding ρ ﬁxed, a lowering-time ﬁeld whose well-typed one-
+ﬁeld payload substitution changes Iρ belongs in Fχ . Node identity, behavior, contracts, precedence,
+graph-declared scheduling, and executable-bound policy are mandatory instances.
+Authority-conditioned semantics is a diﬀerent object:
+                                 (                                                )
+                     Aρ (χ, η) = Admissibleρ (χ, η), Lallowed
+                                                      ρ       (χ, η), Kρrun (χ, η) .
+
+Holding (ρ, χ) ﬁxed, an admission-time ﬁeld whose well-typed one-ﬁeld environment substitution
+changes that decision or allowed trace projection, or the context-resolved execution law, belongs in
+Fη ; it does not redeﬁne Iρ (χ). Requested eﬀect scope is a payload contract. Granted permission,
+credentials, sandbox/approval posture, and independently resolved routes are residual environment
+facts. A model/backend selector is Fχ only when frozen in the executable and thus part of Kρχ ; a
+route resolved independently at admission is a distinct Fη fact. Provider sampling after admission
+is ξ. Lowerer, canonicalizer, and schema versions remain Fν provenance. An omitted, bindable fact
+cannot be relabeled exogenous to protect the schema.
+These placement predicates are denotational; the paper does not assume that equality of arbitrary
+stochastic trace languages is decidable. Operational tests instead declare a ﬁnite observation proﬁle
+
+
+                                               ω = (h, πω , ζ),
+
+where h is a transition horizon, πω is an event projection (subscripted to keep it distinct from the
+lifecycle policy vector π; ﬁnding BR9-004 of the v0.9.9-r6 blind review), and ζ is a reproducible
+choice harness. A controlled substitution that changes the resulting observation is a bounded
+witness against equivalence. An unchanged ﬁnite observation is only non-falsiﬁcation under that ω;
+it does not prove denotational equality or causal inertness.
+The v0.9.9-r6 blind review observed (ﬁnding BR9-001) that a proﬁle left to the author and absent
+from the published evidence vector makes non-falsiﬁcation unearned: a projection too coarse to
+
+                                                      10
+distinguish anything yields it for free. The concrete proﬁle is therefore published. Every non-
+falsiﬁcation this paper reports was observed under one proﬁle, ω0 : the horizon h is the complete
+archived run record of each reported run, from admission through terminal state, untruncated; the
+event projection πω is the canonicalizer’s identity-bearing ﬁeld projection at the pinned Fν versions;
+and the choice harness ζ is the committed reproduction wrapper at its archived commit, executed
+against byte-ﬁxed archives with no live provider sampling, so ξ is not exercised. ω0 is carried as the
+eighth component of ΓE , and every reported non-falsiﬁcation is paired with the positive detection
+controls of Section 8 three of three historical disposable-copy mutations detected, one of one
+current-Core admission-drift control detected so a proﬁle that detects nothing is distinguishable
+from a genuine equivalence: under ω0 the detectors ﬁre on seeded diﬀerences and do not ﬁre on
+the reported substitutions. An adequacy condition constraining πω in general remains open and
+unclaimed.
+Eﬀect-semantic equivalence is explicit:
+
+                         χ1 ≡β χ2 ⇐⇒ ∀f ∈ Fχ , valueχ1 (f ) ≈f valueχ2 (f ).
+
+The per-ﬁeld relations also carry a trace-soundness obligation for every substrate contract ρ claimed
+by the proﬁle:
+
+                   TraceSoundρ (β) ⇐⇒ ∀χ1 , χ2 ,        χ1 ≡β χ2 ⇒ Iρ (χ1 ) ≡ Iρ (χ2 ).
+
+Finite observations can falsify this obligation but cannot certify it universally. This keeps a coarse
+ﬁeld-equivalence rule from silently erasing a trace-distinguishing payload change while leaving byte
+canonicalization formally conforming to that coarse rule. Residual-environment equivalence is de-
+ﬁned independently:
+
+                         η1 ≡η,β η2 ⇐⇒ ∀f ∈ Fη , valueη1 (f ) ≈f valueη2 (f ).
+
+It carries the parallel environment/authority obligation
+
+             AuthoritySoundρ,χ (β) ⇐⇒ ∀η1 , η2 ,     η1 ≡η,β η2 ⇒ Aρ (χ, η1 ) = Aρ (χ, η2 ).
+
+A coarse relation may therefore not erase a change in admission, allowed traces, or the context-
+resolved execution law. A controlled ObsA ρ,ω diﬀerence falsiﬁes authority soundness under the de-
+clared proﬁle; ﬁnite equality is only non-falsiﬁcation, never a universal certiﬁcate. Environment
+canonicalization must preserve the declared relation rather than silently substitute pathname or
+serialization equality.
+The accepted identity proﬁle ν̄ is selected outside the artifact; the header does not recursively select
+the function that interprets it. Before canonicalization or qualiﬁcation, the strict model checks
+
+                                    HeaderOKν̄ (x) ⇐⇒ ν(x) = ν̄.
+
+A mismatch refuses before canonicalization and before host eﬀects. Only then does the externally
+selected canonicalizer consume χ. It conforms to βν̄β only when both directions hold:
+
+                           canonν̄C ,β (χ1 ) = canonν̄C ,β (χ2 ) ⇐⇒ χ1 ≡β χ2 .
+
+Canonical artifact bytes separately frame a ﬁxed header encoding and the canonical payload:
+
+              bν̄,β (x) = frame(canonHeader(ν(x)), canonν̄C ,β (χ)) ,       HeaderOKν̄ (x).
+
+                                                   11
+Thus a header change creates a new artifact identity without being mislabeled as a trace-semantic
+mutation. In the Mentu instantiations and paper tools, H is full-length SHA-256 and executable
+identity is
+                                    hx = SHA256(bν̄,β (x)).
+For run j, deﬁne the residual binding after requaliﬁcation and concrete context selection as
+
+                                   ηβ,j := bindF β (sj , aj , qrq,j , cj ).
+                                                    η
+
+
+Environment identity is the separate binding hη,j = SHA256(canonη,β (ηβ,j )), when an aggregate is
+computed. Truncated hexadecimal strings in ﬁgures are labels, never identities.
+Two tests must remain separate. For admitted run j, let Uj inventory identity-bearing ﬁeld names
+actually recovered from the executable and receipt, and let Oj ⊆ Uj ×{ν, χ, η} record their observed
+placement without copying pβ . Declared binding closure requires
+
+                      Uj = Dβ ,       ∀f ∈ Dβ ,         {k : (f, k) ∈ Oj } = {pβ (f )}.
+
+This compares an independent declared inventory with observed encoding and requires complete,
+unique placement; it is not merely the declared partition identity above. Schema adequacy asks
+whether a bindable causal fact was omitted. An omission probe holds x and declared η ﬁxed, varies
+one undeclared candidate fact such as execution-model identity, permission posture, clock, or locale,
+and observes whether admission, the allowed trace projection, or the context-resolved execution law
+changes. A positive witness is a schema defect and bars an adequacy claim under that β.
+Before admission, the schema itself must also be well formed: pβ is total and typed on Dβ ; its
+three inverse images are pairwise disjoint; every non-header identity ﬁeld has exactly one declared
+semantic-class assignment with an addressable analytic or external justiﬁcation; and the indepen-
+dently enumerated identity-bearing names emitted by executable and receipt encoders equal Dβ .
+The mechanical gate checks declaration presence, uniqueness, placement, and encoder closure; it is
+not a semantic oracle. Unassigned names, names without a declared semantic class, dual-domain,
+undeclared-emitted, declared-but-unemitted, and multiply placed names cause refusal. Trace sound-
+ness, authority soundness, and open-world adequacy remain semantic obligations that ﬁnite wit-
+nesses can falsify but cannot prove.
+RFC 8785 speciﬁes a canonical JSON serialization for stable hashing, including primitive serial-
+ization and deterministic property ordering [26]. The model’s canonicalizer must state whether it
+conforms to that baseline or deliberately diﬀers. Its declared semantic equivalence, path/content
+aliases, ﬁeld placement, and artifact framing are domain extensions; RFC 8785 does not establish
+them. Canonicalizer evidence likewise needs both directions: well-typed semantic mutations must
+produce distinct canonical bytes, while equivalent encodings such as key ordering, normalized num-
+bers, and declared path equivalents must converge. An Fη -only change must leave hx unchanged
+while changing the environment binding or admission decision. The present evidence does not
+establish complete schema adequacy or full biconditional canonicalizer conformance. Neither the
+historical C30 pin nor the current Core pin exercises a HeaderOKν̄ mismatch-before-eﬀects ﬁxture,
+so header refusal remains a speciﬁcation obligation rather than an observed pass at either pin.
+In the historical C30 Mentu path at 40bd3f9, the full SequenceDefinition binds nodes and
+dependsOn relations, while the frozen backend/model selector, other executable-bound policy, and
+lowerer version are also bound by the executable artifact. Under the reﬁned model, the graph and
+executable-bound policy ﬁelds belong to Fχ , while the lowerer version belongs to Fν . Repository
+
+
+                                                        12
+and discovery state, granted authority, qualiﬁcation state, resolved credential/endpoint posture, and
+concrete admission context remain in Fη . This ﬁeld-placement example interprets the historical
+pilot; it is not projected forward onto the current Core deﬁnition.
+Even if both identities match, an agent node may be stochastic. Output reproducibility is therefore
+a property of observations from
+                                         Y ∼ D( · | x, η, ξ ),
+where ξ includes model sampling, remote service behavior, and other uncontrolled state. Semantic
+judgment has two distinct targets: PlanAdequate(x, o) asks whether the executable expresses an
+appropriate course of action for the objective, while OutcomeCorrect(y, o) asks whether an observed
+outcome satisﬁes it. Graph identity, environment identity, output reproducibility, plan adequacy,
+and outcome correctness require diﬀerent evidence and are never substituted for one another in
+this paper.
+
+
+Projection is not adoption
+
+A frozen executable may be projected into a persistent source form p for evidence or reuse. Pro-
+jection parity requires that pinned lowering reproduce the executable identity bound by z; it does
+not grant authority. If p later enters a diﬀerent assurance contract ψt , the transition is explicit:
+
+                     Project(z) → p,      Adopt(p, ψt , a, s) → (xt , qt ) | refuse .
+
+Adoption names the target contract, re-lowers or loads the artifact, qualiﬁes it, and requires that
+contract’s admission transition before eﬀects. Discoverability through another parser or command is
+not adoption. This rule keeps authoring origin out of runtime authority while preventing parseable
+bytes from silently inheriting the weakest available entry path.
+
+
+4    Lifecycle policies
+
+The C30 policy vector is
+                                          π = (τ, ϕ, µ, ρ),
+where τ is construction time, ϕ is the freeze boundary, µ is authoring method, and ρ is execution
+substrate. Let
+                                       Ω⊆T ×Φ×M×R
+be the feasible policy region. The coordinates are separately speciﬁed: changing one does not
+redeﬁne the others. This is a separability claim over Ω, not a claim that every Cartesian combination
+is feasible, independent in a statistical sense, or free of engineering constraints. The named modes
+are reference conﬁgurations, not an exhaustive taxonomy. The normative coordinate vocabulary is:
+τ ∈ {pre-task, task-time}; ϕ ∈ {continuous, addressable}; µ names the source-production method;
+and ρ names the runner-and-scheduler substrate whose execution semantics are being compared.
+The plan container z is the addressable lifecycle record used by addressable-ϕ policies; z binds x
+but is not synonymous with it.
+An entry policy also has an assurance contract ψp = (Qp , Ap , Ep ), comprising its qualiﬁcation
+regime, admission transition, and evidence contract. This is not a ﬁfth C30 treatment axis. It
+makes explicit that ρp = ρq does not imply ψp = ψq : policies can share execution semantics while
+
+
+                                                 13
+retaining diﬀerent assurance contracts. Here ψ is an author-declared runtime contract, not an
+independently evaluated security proﬁle, protection proﬁle, or certiﬁcation level.
+
+Mode         Construction time      Freeze boundary         Authoring method        Execution substrate
+S            Before task            Addressable source      Method µS               Shared graph
+             invocation             before invocation                               substrate (model)
+D            At task invocation     Continuous              Method µD               Shared graph
+                                    construction-to-                                substrate (model)
+                                    execution invocation
+H-direct     At task invocation     Addressable plan        Direct planner          Shared graph
+                                    before a later                                  substrate (model)
+                                    execution invocation
+H-scaﬀold    At task invocation     Addressable plan        Scaﬀold authoring       Shared graph
+                                    before a later          method                  substrate (model)
+                                    execution invocation
+
+Table 3: Reference policies as conﬁgurations of separately speciﬁed lifecycle coordinates in the feasible
+region Ω. “Shared” is a model parameter and an implementation question, not a universal fact about all
+systems.
+
+These four points do not empirically demonstrate independent variation of all coordinates: ρ is
+held constant, and the observed τ, ϕ values are only partially crossed. Separability is therefore a
+speciﬁcation claim about how a conﬁguration is described, not an identiﬁed causal eﬀect or a claim
+that the reference points span Ω.
+Two consequences follow from the factorization. First, “scaﬀold” is not a runtime kind. Here
+it names an authoring method, not the broader model-and-tool harness also called a scaﬀold in
+agent literature. If it changes only µ, then a scaﬀolded candidate must satisfy the same lowering,
+qualiﬁcation, admission, and execution contracts as a directly authored candidate. Second, a static
+source need not have been written by a human, and a dynamically constructed source need not
+execute immediately. Provenance, timing, freezing, and execution are separable.
+The word hybrid remains useful only when its boundary is named. Here it means dynamic construc-
+tion followed by an explicit, addressable freeze and a later requaliﬁcation-and-execution invocation.
+It does not mean two runtimes, weaker contracts, or continued planner authority while the frozen
+epoch runs.
+
+
+Four separate evaluation decisions
+
+The model does not use one word, “implemented,” for four diﬀerent questions. First, an author-
+checked architectural instantiation requires an origin-neutral executable type, one declared scheduler
+contract, and mapped construction or loading boundaries that can target them. Committed source
+and named engineering tests must support that mapping. This label denotes an author-performed
+check, not an independent audit or canonical reference status.
+Second, executed cross-origin parity is stronger: at least two feasible lifecycle policies must lower or
+load equivalent ﬁxtures, enter the same runner, receive the same node-dispatch and graph-declared
+scheduling semantics, and show that origin-speciﬁc metadata does not silently alter those semantics.
+The evaluation must follow and execute both traces; a source deﬁnition or unexecuted ﬁxture is
+insuﬃcient.
+
+                                                   14
+    Static, dynamic, and hybrid as lifecycle policies
+    The policy coordinates are separable over a feasible region; the arms are configurations, not four engines.
+
+
+
+
+              Arm                 Construction                Freeze                 Authoring                      Execution
+
+
+
+                S                  before task               persistent            recorded prior                 shared substrate
+
+
+
+                D                   task time               continuous             protocol-fixed                 shared substrate
+
+
+
+            H-direct                task time                  staged                   direct                    shared substrate
+
+
+
+           H-scaffold               task time                  staged                  scaffold                   shared substrate
+
+
+
+                                Scaffold is an authoring method; staging is a freeze policy.
+
+
+
+
+Figure 2: S, D, H-direct, and H-scaﬀold occupy points in one policy space. The labels do not deﬁne separate
+runner implementations.
+
+
+Third, full staged binding/admission conformance requires I1–I6 under ﬁxed versions, including
+exercised I4 drift categories and complete I5 declared-closure and mandatory-ﬁeld mutation ﬁxtures.
+Shared machinery alone is insuﬃcient.
+Fourth, logical safety is reported separately from operational evidence adequacy. Implications can
+pass vacuously in a runtime that refuses everything. We therefore report
+
+      ΓE = (nrecorded host-boundary runs , ndistinct x , nprojection , |Jν̄,β,f |, nheader refusal , DI4 , MI5 , ω).
+
+The eighth component publishes the concrete observation proﬁle under which the reported non-
+falsiﬁcations were observed (Section 3, ω0 ), so the strength of every equivalence statement is in-
+spectable rather than implicit. ΓE is published for the historical population only, by design at this
+candidate: current-Core engineering tests are reported outside this vector, and any future current-
+pin claim must carry its own ΓE (ﬁnding BR9-005). At least one admitted run with recorded
+host-boundary activity is required for instrumented non-vacuity; this count is not proof that every
+semantic eﬀect was observed. A cross-input identity claim requires at least two executable identi-
+ties; I3 requires a projection; I1 must expose its eligible population; and every claimed header, I4,
+or I5 category requires a seeded or observed witness. The historical pilot is non-vacuous for I1–I3
+but has no header-refusal ﬁxture, I4 challenge, or complete I5 matrix. Paper-local detector controls
+and current Core tests are separate evidence, not retroactive pilot observations.
+
+
+
+
+                                                                     15
+5    Qualiﬁcation, freeze, admission, and execution invariants
+
+The lifecycle becomes operational only when its transitions have testable obligations. The author
+check of the pinned commit supports an architectural instantiation for the named strict-DAG
+Core proﬁle. Current tests exercise origin-neutral lowering, an admitted vertical slice, saved-plan
+execution, canonicalization, and drift refusal, but they do not execute an ordinary static recipe and
+a generated graph through one Core admission route. Product-wide executed cross-origin parity
+is therefore not claimed. Full staged-protocol conformance additionally requires I1–I6 under ﬁxed
+versions, exercised I4 drift classes, and a complete I5 ﬁxture matrix. C30 tests only a subset of
+that stronger protocol at its separate historical pin.
+
+
+I1—staged executable identity. Fix ν̄, β = βν̄β , and receipt ﬁeld f = executableId. Let Jν̄,β,f
+contain the staged invocations for which requaliﬁcation succeeds, no bound-ﬁeld drift is detected,
+and admission returns a pre-eﬀect receipt exposing f . For every j ∈ Jν̄,β,f :
+
+                      SHA256(bν̄,β (xinspect,j )) = SHA256(bν̄,β (xrq,j )) = rj .f.
+
+If the saved artifact stores a candidate rather than only an executable, re-lowering must reproduce
+the saved executable bytes under the pinned lowerer and canonicalizer. The pilot instantiates this
+condition only for the Mentu v1 lowerer, canonicalizer, commit, and receipt ﬁeld named in the
+author source check. The identity ratio is conditional on reaching J, so every report must also
+publish the attempted, requaliﬁcation-refused, admission-refused, admitted, and identity-matched
+counts. It is not a pipeline success rate.
+
+
+I2—no execution-time graph planning. Let Jsaved contain invocations registered before any
+run telemetry as entering through the saved-plan requalify-and-admit route with an existing ad-
+dressable plan. Membership is ﬁxed by that entry route, not by the later dispatch outcome. The
+invariant is
+                                ∀j ∈ Jsaved ,    exec
+                                               NConstruct,j = 0.
+A model call that implements an admitted node is execution, not graph planning; the two lanes
+must be separately classiﬁed. An observed graph-construction dispatch is an I2 failure retained in
+Jsaved , not grounds for post-outcome reclassiﬁcation.
+
+
+I3—persistent projection parity. When a generated executable is materialized as a persistent
+recipe projection, their canonical executable identities must be equal. This establishes parity for
+the materialized artifact; it does not move all persistent recipes through the generated path or
+prove global admission convergence. A parity pass is the conjunction of lossless projection and
+deterministic pinned lowering; without a separate lowerer-determinism control it does not identify
+which component would explain a failure.
+
+
+I4—drift refusal before eﬀect. Executable identity does not waive current-state checks. Re-
+qualiﬁcation must bind the frozen graph to the current η1 , and drift outside the admitted policy
+must refuse before host dispatch and target-path change. Requaliﬁcation may reject exact bytes;
+rejection preserves, rather than contradicts, I1. C30 prospectively speciﬁes this invariant, but the
+pilot deliberately challenged zero drift classes. Its source mapping and prospective speciﬁcation are
+not empirical drift-test evidence.
+
+                                                   16
+I5—declared binding closure. For every admitted run j, the independently declared inventory
+and placement map must agree with the observed executable/receipt inventory and placement
+relation:
+                  Uj = Dβ ,    ∀f ∈ Dβ , {k : (f, k) ∈ Oj } = {pβ (f )}.
+The executable binds every ﬁeld assigned to Fν and Fχ ; the receipt binds every declared Fη con-
+stituent or an aggregate identity with declared equality semantics, a schema-versioned ordered
+constituent inventory, and addressable evidence from which the aggregate can be recomputed. An
+opaque aggregate cannot satisfy Uj = Dβ . An extra, missing, duplicated, or misplaced identity-
+bearing ﬁeld, a header/pin mismatch, or an unbound declared environmental constituent causes
+refusal before eﬀect. A failed payload inequivalence, equivalence, partition-isolation, or header
+ﬁxture makes the relevant binding or canonicalization claim nonconforming under that β.
+The C30 pilot observes selected executable and receipt bindings, but it does not compare an in-
+dependent complete Dβ inventory with Uj , and it does not exercise a complete mandatory-ﬁeld
+mutation suite. It therefore does not establish full declared closure or biconditional canonicalizer
+conformance. Neither the C30 pin nor the current Core pin exercises HeaderOKν̄ mismatch re-
+fusal. Schema adequacy is a separate open-world property requiring omission probes over plausible
+undeclared bindable facts; neither declared closure nor a conforming canonicalizer establishes it.
+
+
+D1—authoring/authority non-implication. A candidate, qualiﬁed candidate, and frozen
+plan have no implied eﬀect authority. Admission produces a bounded authority state, and changing
+µ cannot change that state when the executable, qualiﬁcation result, external authority envelope,
+and bound runtime context are equal. If an explicit qualiﬁcation, authority, or runtime contract
+names the proﬁle, the authoring method becomes an authority-bearing policy input and the impli-
+cation no longer applies. This is a construct boundary, not an empirical invariant: scaﬀold describes
+construction unless a named authority contract says otherwise.
+
+
+I6—evidence integrity. For this model the run record must bind six things: the executable,
+authority envelope, qualiﬁcation result, concrete runtime context, run identity, and artifact mani-
+fest. This is a closed mandatory set. Every manifest ﬁle digest and its derived aggregate bundle
+digest must recompute. I5 establishes ﬁeld placement; I6 establishes that the receipt, run iden-
+tity, and artifact manifest survive as addressable evidence. The pilot veriﬁed receipt ﬁelds and
+manifest digests but did not compute a standalone aggregate hη . At the current Mentu pin, the
+concrete runtime context is not an unnamed placeholder: it includes the run and workspace roots,
+transfer mode, locks and baselines, Git and selected-read-set digests, dependencies and variables,
+the resolved backend/model route (distinct from any executable-frozen selector), auth, endpoint,
+permission, sandbox, approval, MCP, primitive and adapter identities, engine version, qualiﬁca-
+tion/runtime state digests, and outer-call/gate posture. The executed drift control perturbs the
+declared runtimeStateDigest; it is an Fη -side admission check, not an executable-ﬁeld mutation.
+Evidence is a product of execution, not a transcript substituted for an addressable artifact.
+
+
+D2—semantic non-implication. Mechanical qualiﬁcation is sound only relative to its declared
+checks. Passing schema, dependency, footprint, budget, or veriﬁcation predicates does not prove
+plan adequacy or outcome correctness. In particular:
+                 ∧
+                 6                                     ∧
+                                                       6
+                      Ik ̸⇒ PlanAdequate(x, o),              Ik ̸⇒ OutcomeCorrect(y, o).
+                k=1                                    k=1
+
+
+                                                  17
+D1 is excluded because it is an analytic construct boundary, not an empirical protocol invariant.
+
+
+Scope theorem: runtime replanning
+
+Let receipt r0 admit x0 , whose graph-semantic core is G0 . After execution begins, suppose a
+planner changes a node, dependency, behavior binding, node contract, or graph-declared scheduling
+transition to produce xsucc . The narrow identity lemma has the explicit antecedent
+
+                                              χsucc ̸≡β χ0 .
+
+Given that antecedent and a canonicalizer conforming to β:
+
+                                        bν̄,β (x0 ) ̸= bν̄,β (xsucc ).
+
+Under the stated collision-resistance assumption,
+
+               SHA256(b(x0 )) ̸= SHA256(b(xsucc ))           =⇒          r0 does not bind xsucc
+
+except in the digest-collision case. Dispatching xsucc under r0 violates the non-mutating admission
+binding. A same-byte trace-relevant mutation exposes a trace-unsound β, a ﬁeld-placement defect,
+or canonicalizer nonconformance; it is not an identity distinction. A distinct-byte same-digest
+observation challenges the digest assumption. A scheduler-build change rather than graph-declared
+scheduling changes the bound environment identity or causes refusal.
+The stronger semantic corollary may derive the narrow antecedent only when
+
+                            Iρ (χsucc ) ̸≡ Iρ (χ0 )    ∧     TraceSoundρ (β).
+
+A coarse relation that treats A → B and B → A as equivalent because they share endpoint names
+can preserve canonical bytes while reversing observable order. That is a counterexample to trace
+soundness of the schema, not evidence that identity distinguished the mutation. A ﬁnite ObsIρ,ω
+diﬀerence is a bounded witness, not a universal certiﬁcate.
+An admission-scoped graph epoch is the interval governed by one receipt and executable identity.
+The term borrows the fencing intuition of a generation change but makes no claim about distributed
+consensus, leader election, or a product-wide epoch counter.
+There are two coherent alternatives. The system can close epoch e0 , construct and qualify G1 ,
+and issue a new admission for epoch e1 ; or it can deﬁne an adaptive runtime in which the planner
+and its allowed transition relation are themselves part of the admitted executable semantics. The
+latter may keep a ﬁxed outer graph while producing data-dependent work, but it is not execution
+of the same frozen inner topology. Runtime replanning that changes graph structure or scheduling
+semantics without either treatment is outside the frozen-epoch protocol population. An interpreted
+surface that claims neither a complete graph nor an admitted meta-runtime identity is a third
+honest classiﬁcation. This is a scope boundary, not an empirical counterexample or falsiﬁer of the
+model. Its value is discriminant: it states which object must carry authority when topology remains
+adaptive. A ﬁxed outer behavior tree is one established way to represent data-dependent control
+without silently changing the admitted inner object [5].
+
+
+
+
+                                                      18
+6    Mentu as an Author-Checked Architectural Instantiation
+
+The evidence is intentionally split across two source epochs. Historical C30 observations and their
+original source corroboration remain pinned to 40bd3f9. The current architecture mapping is
+pinned independently to f3d89e7. The later Core extraction is not inferred backward into the
+pilot.
+At the current epoch, Mentu is the paper’s author-checked architectural instantiation of the strict-
+DAG admitted Agent Graph Runtime proﬁle. “Author-checked” means an author-proposed model-
+to-system mapping checked against committed source and named engineering tests executed by the
+author-side reproduction harness. It is not an independent audit, external certiﬁcation, canonical
+reference status, a product-wide uniformity claim, or a comparative rank.
+
+
+An extracted admitted graph Core with a public API. MentuExecutionGraphCore owns
+the closed ExecutionGraphDefinition, lowering, canonicalization, qualiﬁcation, admission, ac-
+tivation evidence, lifecycle types, and ExecutionGraphScheduler. The checked MentuSequence
+DefinitionAdapter is the boundary from MentuEngine’s general recipe schema to the admitted-
+only Core deﬁnition. MentuEngine retains host eﬀects, product integration, and presentation
+through adapters. Core rejects unknown dependencies, self-dependencies, and cycles, so the ad-
+mitted proﬁle is a strict DAG; neither the abstract model nor every Mentu surface is therefore
+DAG-only.
+
+
+One admitted scheduler, explicit compatibility proﬁles. Equivalent admitted deﬁnitions
+receive DAG validation, ready-set computation, bounded parallelism, exclusivity, failure cascade,
+and circuit behavior from the one Core scheduler. The engine’s StepScheduler projects engine
+state and bridges eﬀectful node execution rather than deﬁning a second DAG scheduler. The
+prepared admitted path constructs the sole admitted SequenceRunner only after Core admission
+and pre-host state validation. Committed current-head test deﬁnitions cover persistent/generated
+origin parity, admission drift refusal, and an admitted vertical slice. The paper-local current-
+epoch veriﬁer executes 13 named ﬁlters from an exact Git archive with external build scratch
+and an isolated runtime home: 25 of 25 targeted tests pass. Coverage includes Core and engine
+canonicalization, generated/persistent lowering parity, admission identity, the admitted vertical
+slice, saved-plan exact execution, projection parity, lifecycle ordering, pre-runner drift refusal, and
+the Engine–Core round trip. These are author-side engineering tests, not independent black-box
+replication or exhaustive schema conformance. None of the 13 ﬁlters exercises HeaderOKν̄ mismatch
+refusal.
+The current-epoch mapping follows generated and saved-plan prepared boundaries to the same
+Core deﬁnition and scheduler, while its origin-parity ﬁxture compares equivalent generated and
+persistent lowerings. Historical C30 runner evidence remains corroboration for its own pin and
+is not substituted for this current-Core mapping. No test in this revision executes an ordinary
+static recipe and a generated graph through one Core admission route, so product-wide executed
+cross-origin parity remains unclaimed.
+Mentu also retains deliberate compatibility proﬁles. Ordinary recipe dispatch can use the raw
+SequenceRunner initializer with legacy authority, and mentu workflow run uses the interpreted
+WorkflowRunner. Their diﬀerent assurance or execution contracts are proﬁle boundaries, not evi-
+dence that the admitted graph core is architecturally incomplete. They are also not silently counted
+
+
+                                                  19
+           Recipe auto   CLI auto    Eﬀective auto    Commit-record gate   Authority entry
+               false        false        false               no                 legacy
+               false        true         true                no                 legacy
+               true         false        true                yes           legacy after gate
+               true         true         true                no                 legacy
+
+Table 4: Committed-source control-ﬂow matrix for ordinary recipe dispatch. The gate is a recipe-commit
+record existence check, not Core qualiﬁcation or admission. The matrix reports no operational traﬃc.
+
+
+as conformance evidence for that Core.
+The current committed-source census found 11 persisted recipe type cases, 10 direct production
+SequenceRunner construction sites (9 raw and 1 admitted), and 2 direct WorkflowRunner con-
+struction sites. These are exact lexical constructor counts, not a denominator or percentage of
+every eﬀectful Mentu entry point. The audit classiﬁes the graph-bearing roots it names and leaves
+other product operations outside its population. A lexical census establishes where constructors
+are written, not which are reachable or how often they execute: the sole-admitted-runner statement
+it supports is a source-layout claim, and a reachability-grade check (call-graph or runtime instru-
+mentation over the census population) is registered as future work, not claimed (ﬁnding BR9-006
+of the v0.9.9-r6 blind review).
+
+
+Current projection-adoption boundary. The source audit found one concrete cross-proﬁle
+transition boundary. Persistent projection writes a normal recipe.json, prompts, and parity
+evidence, but no required-authority marker. If placed under ordinary recipe discovery, those ﬁles
+can later be parsed by mentu run and reach legacy compatibility authority without an explicit
+adoption transition. Recipe dispatch computes eﬀective auto behavior as CLI auto OR recipe
+auto. It nevertheless constructs the raw SequenceRunner after any applicable precondition in all
+four Boolean cells, and that initializer assigns legacy authority independently of the eﬀective-auto
+value:
+The unmodiﬁed generated projection occupies the recipe-auto-false row because materialization
+adds no auto_mode marker; CLI absence and explicit false collapse to its false cell. The gener-
+ated graph invocation itself enters through the admitted route. The coherent alternate-contract
+transition is:
+
+         generated projection → Adopt(ψt ) → target qualiﬁcation/admission → execute.
+
+Until Mentu enforces that transition, admitted authority must be described as a property of the
+qualiﬁed-and-admitted invocation path, not an intrinsic property of parseable projection bytes.
+This is a bounded cross-proﬁle adoption ﬁnding exposed by the model, not a verdict that the
+runtime abstraction is missing. The source matrix establishes reachability and control ﬂow, not
+successful executions or use frequency in any cell.
+Mentu makes the abstraction operational and inspectable: exploratory construction can converge
+on a closed executable whose qualiﬁcation, admission, scheduling, activation evidence, and host
+boundary are explicit. The current source establishes an admitted reference proﬁle and named
+compatibility surfaces. It does not establish global adoption enforcement, exhaustive I5 mutation
+coverage, or comparative superiority.
+
+
+                                                 20
+7    Historical C30 invariant-exercise method
+
+C30 prospectively committed the lifecycle axes and a matched four-arm study in the author-
+controlled repository before the ﬁrst pilot-evidence commit. The protocol commit is 2d54b8c;
+no external timestamp anchor is claimed. The present analysis uses its smaller, explicitly non-
+verdict-bearing mechanical invariant-exercise phase at the historical Mentu source epoch 40bd3f9.
+It does not measure the later Core extraction at f3d89e7.
+The pilot used 1 bounded documentation objective in H-scaﬀold mode. A task-time planner con-
+structed a strict DAG under an external authority envelope. Plan-only execution emitted canonical
+plan bytes. The operator inspected the plan and materialized a persistent recipe projection and
+parity record. A later invocation loaded the exact saved plan, rebuilt and requaliﬁed its executable
+against current state, admitted it, and invoked the runner without another graph-planner call.
+Read-only analysis then checked the plan, persistent recipes and prompt ﬁles, parity records, re-
+qualiﬁed admission bundles, receipts, call lanes, and sealed run manifests. For each persistent
+projection it reconstructs the normalized deﬁnition, contracts, eﬀective policy, and canonical exe-
+cutable digest from source artifacts; the stored parity record is a cross-check, not the derivation.
+For each admitted execution it also rebuilds the requaliﬁed bundle identity from the admitted deﬁ-
+nition, actual prompt bodies, bound variables, contracts, and mechanically derived eﬀective policy
+before comparing that digest with the receipt; a copied stored digest cannot satisfy this check. The
+planner-separation check has bounded, partly shared corroboration: the execution records state
+the dispatch count; every sealed call-lane record is bound to an admitted step activation and none
+is planner-classiﬁed; and a lexical audit of the pinned runPlanned implementation ﬁnds no planner
+emission. All three channels depend on recorded classiﬁcation or one named code path; they are not
+independent instrumentation. The result is therefore zero recorded planner dispatches, not proof
+that every possible out-of-band planning path was observable.
+
+
+        Executable identity across the admission boundary
+        The same executable digest appears at inspection, requalification, and in the receipt binding.
+
+
+
+
+             Inspected executable                                  Requalified executable                              Receipt executable field
+             f0167cf72c04e0af…                                     f0167cf72c04e0af…                                   f0167cf72c04e0af…
+             plan container 330f28ea6c21…                          same canonical executable bytes                     receipt object 501f757e8ce4…
+
+
+
+
+                              Observed protocol invariants
+                              5/5 persistent identity · 3/3 admission identity · 0 recorded graph-planner dispatches
+
+
+
+
+                      Identity is about graph bytes—not deterministic node outputs or semantic correctness.
+
+
+
+
+                                                                                 21
+Figure 3: One representative historical C30 identity chain at 40bd3f9. The 3 admitted attempts carried
+distinct executable hashes. The receipt has its own identity while binding the requaliﬁed executable identity.
+This is pilot evidence, not a depiction of the later Core extraction.
+
+
+The measurement pipeline has three layers. The frozen C30 analyzer remains the authoritative
+interpretation of the pilot corpus. Paper-local reproduction independently recomputes the identity
+and manifest invariants, reports source facts from committed blobs, and writes immutable JSON
+projections consumed by the manuscript and ﬁgures. It neither invokes the Mentu CLI nor writes
+to the measured stores or sealed run bundles. Finally, disposable seeded controls mutate copies
+only: one executable-bound contract ﬁeld, one planner-lane record, and one manifest-listed byte. A
+separate control independently executes the committed current-Core admission-drift test in external
+build scratch. These controls assess detector sensitivity in two separately reported epochs; they are
+not C30 observations, a reliability coeﬃcient, or complete I5 coverage.
+The unit of an identity check is an addressable artifact transition, not an independent task trial.
+Qualiﬁed plan stages may be counted for projection parity; saved-plan execution attempts may
+be counted for inspection-to-receipt identity. They may not be treated as repeated outcome trials
+because the code and plan evolved during debugging. Human semantic inspection decisions are
+retained as human judgments and are not recoded as mechanically derived verdicts.
+The pilot can falsify a protocol invariant: a receipt mismatch, an execution-time planner dispatch,
+or a manifest mismatch would be a concrete failure. It cannot estimate a static-versus-dynamic-
+versus-hybrid eﬀect because the objective has no matched S or D arm. It also cannot establish
+planning amortization because there is no unchanged-state 3-repeat series.
+
+
+8    Results and negative ﬁndings
+
+The mechanically regenerated pilot summary is shown in Table 5. Its tabulated measurements and
+the principal counts in the surrounding prose are injected from generated result artifacts through
+the build context. Generated JSON remains authoritative where explanatory prose restates a small
+corpus descriptor.
+The identity checks passed on the observed transitions: 5 of 5 persistent projections and 3 of 3
+independently reconstructed requaliﬁed-bundle-to-receipt transitions retained executable identity.
+Saved-plan execution recorded 0 graph-planner dispatches. The sealed-bundle audit found all 54
+expected leaves available, with zero missing and zero extra. It found 0 mismatches across those
+54 ﬁle-digest checks and 0 mismatches across 3 aggregate checks derived from the same ﬁle sets.
+These observations support identity continuity and planner separation in this corpus. The transition
+funnel is explicit: ﬁve qualiﬁed projection attempts produced ﬁve identity checks; contemporaneous
+human inspection rejected v2 and v4 semantically, so three projections were selected for saved-plan
+execution. Those three execution attempts produced zero requaliﬁcation refusals, zero admission
+refusals, three admissions, and three identity matches. The ratios are conditional transition checks,
+not end-to-end pipeline success rates. The planner result is additionally corroborated by 0 planner-
+classiﬁed and 0 unbound records among the sealed execution call lanes and by the pinned saved-
+plan source path. It does not imply that node-level model calls were absent, and none of these
+observations implies deterministic node output.
+The historical paper-local sensitivity exercise detected 3 of 3 named faults. A mandatory contract-
+ﬁeld mutation changed executable identity; an injected planner-lane record changed the planner
+
+                                                     22
+Check or observation                  Type               Result         Context
+Persistent-projection executable      Transition         5/5            Qualiﬁed plan projections
+identity                              check
+Recomputed                            Transition         3/3            Saved-plan executions
+admitted-bundle-to-receipt identity   check
+Graph-planner dispatches in           Event count        0              3 saved-plan executions
+saved-plan execution
+Sealed-manifest ﬁle-digest            Leaf validation    0              54 ﬁle checks
+mismatches
+Derived bundle-digest mismatches      Aggregate          0              3 bundle checks derived from
+                                      validation                        those ﬁle sets
+Distinct discovery repository heads   Corpus             3              5 plan stages
+                                      descriptor
+Mechanically qualiﬁed plans           Human              2/5            Plan inspection
+rejected semantically                 judgment
+Qualiﬁed projections selected for     Selection funnel   3/5            Versions v2 and v4 were not
+saved-plan execution                                                    attempted after
+                                                                        contemporaneous semantic
+                                                                        rejection
+Successful outputs requiring          Human              1/1            Completed outputs
+semantic correction                   judgment
+Documented intervention decisions     Chronology         15             Full pilot history
+Completed execution attempts          Chronology         1              3 chronological attempts
+
+Table 5: Historical C30 invariant-exercise results. Every row derives from 1 H-scaﬀold objective (n = 1)
+carried through sequential development stages; the counts are not independent task trials.
+
+
+
+
+                                                    23
+count from zero to one; and one byte ﬂip caused exactly 1 of 54 leaf digests and 1 of 3 derived
+bundle digests to fail. Separately, the current-Core sensitivity exercise detected 1 of 1 named
+faults: its admission-drift test refused a seeded captured-state mutation before execution. Input-
+tree ﬁngerprints were identical before and after. These are positive controls for the named detectors,
+not additional pilot trials or proof of complete canonicalizer coverage. The historical payload-
+mutation control exercises one of the six mandatory Fχ classes (κ, contracts), with no historical
+equivalence, Fη -isolation, header-mismatch, or omission-witness ﬁxture.
+The 5 plan stages span 3 discovery repository heads, so the corpus is not wholly ﬁxed-state: v1
+maps to c0adef6, v2 to 37f9f2c, and v3–v5 to a828e91. Thus the last three stages share a
+discovery head, while their plans and executable identities still diﬀer. The 3 saved-plan executions
+are likewise chronological attempts, of which 1 completed the task. Reporting that fraction as a
+success rate would manufacture independence the design does not have. The 3 admission receipts
+also bind 3 distinct executable hashes: no executable graph was repeated, so the pilot contains no
+empirical comparison of output reproducibility for an unchanged graph.
+The 54 leaf checks are nested inside 3 bundles inside one pilot corpus. They are not 54 independent
+trials, and no eﬀective sample size of 54 is claimed. The byte-ﬂip control illustrates the nesting:
+one changed leaf invalidated its leaf digest and the one derived bundle digest that contained it.
+The strongest negative result concerns semantic validity. 2 mechanically qualiﬁed plans were re-
+jected by human semantic inspection, and 1 mechanically successful output required post-run se-
+mantic correction. Mechanical qualiﬁcation and step veriﬁcation therefore did not establish plan
+adequacy or outcome correctness in the observed case. This is not an argument against qualiﬁcation;
+it identiﬁes the boundary of what those predicates certiﬁed.
+The attempt chronology documents 12 task-planning dispatches. Complete telemetry exists only
+for the 5 saved qualiﬁed plans: 133,022 input plus 10,127 output tokens, totaling 143,149; 108,874
+milliseconds elapsed; 490,151 request bytes; and 42,930 response bytes. The other documented dis-
+patches lack complete telemetry, so these exact values are lower bounds for the full planning history
+rather than rounded estimates or a treatment eﬀect. The 3 admitted attempts contain incomplete
+USD-labelled model-cost telemetry. The 2 attempts with nonzero telemetry have a US$0.99 subto-
+tal; the remaining 1 term is indeterminate because its recorded zero cannot be distinguished from
+missing telemetry. The provider pricing table used at collection time was not preserved, so no price
+recalculation or completeness claim is made. The same history contains 15 documented interven-
+tion decisions across provider, product, authority, plan, execution, and artifact-review stages. With
+0 matched S observations and 0 matched D observations, none has a comparative interpretation.
+The number of unchanged-state repetition series is 0. The machine-readable comparative-verdict
+ﬂag is false, read from the repository artifact results/detector-sensitivity.json (sha256
+18584045...); the artifact is named because it sits outside any blind-review surface (ﬁnding BR9-
+007).
+For the historical population, the evidence-adequacy vector is
+                                   ΓE = (3, 3, 5, 3, 0, ∅, ∅, ω0 ) :
+all three admitted runs have recorded host-boundary activity, three distinct admitted executable
+identities, ﬁve projections, three invocations in the reported I1 set, zero exercised header-refusal
+ﬁxtures, zero exercised I4 drift categories, zero C30 I5 ﬁxture classes, and the published observation
+proﬁle ω0 of Section 3. The ﬁrst component is instrumentation evidence, not proof that every
+semantic eﬀect was captured. Current-Core engineering tests and paper-local seeded controls are
+reported outside this vector.
+
+                                                  24
+    Evidence boundary
+    Current-source, historical-pilot, and paper-control evidence remain separate.
+
+
+
+
+     Current Core · f3d89e7                                Historical C30 · 40bd3f9                 Untested
+      • author-checked strict-DAG instantiation             • 1 H-scaffold objective                • comparative task outcomes
+
+      • 1 Core scheduler implementation                     • 5/5 projection identity               • total cost or latency gains
+
+      • 25/25 targeted tests · author-side                  • 3/3 admitted identity                 • deterministic model outputs
+
+      • conditional adoption seam disclosed                 • 0 recorded graph-planner dispatches   • full binding-schema conformance
+
+      • no product-wide parity claim                        • 5 stages / 3 heads                    • generality beyond Mentu
+
+
+
+
+                            Paper-local controls · separate population
+                            3/3 historical disposable controls; 1/1 current-Core control
+
+
+
+
+                                                comparative_verdict_permitted = false
+
+
+
+
+Figure 4: Claim boundary for v0.9.10-internal. Observed protocol properties do not license unmeasured
+treatment eﬀects.
+
+
+
+
+9    Discussion: Object Graphs, Lifecycle Control, and Successor
+     Epochs
+
+The model admits a layered architectural reading. The executable task graph is the object-level
+course of action: it ﬁxes eﬀect-bearing nodes, contracts, and scheduling relations. The lifecycle state
+machine is a meta-level control structure: it records how that object was proposed, which predicates
+were established, when its identity became addressable, which concrete context authorized eﬀects,
+and what evidence survived execution. “Meta-level” is used in an engineering sense; it does not
+ascribe self-awareness, privileged introspection, or semantic understanding to the runtime.
+The separation changes the meaning of agent governance. Mentu does not make stochastic agent
+behavior deterministic. It makes an executable commitment inspectable and its authority to act
+attributable. Construction may remain exploratory before admission. Once an exact graph epoch
+has gained eﬀect authority, however, a change to eﬀect-bearing topology or scheduling semantics
+requires either a separately admitted successor epoch or an admitted outer transition system whose
+identity includes the planner and permitted transition relation. Dynamic construction and governed
+execution are therefore compatible without collapsing proposal into authority.
+Execution evidence is not by itself a graph-update operator, and preservation is not learning. A
+cross-epoch extension could allow evidence and review to inform construction of a successor graph,
+but that successor would still require lowering, qualiﬁcation, and admission. This represents recur-
+sive adaptation as an authorized lineage of graph epochs rather than silent mutation of an already
+
+
+                                                                               25
+admitted graph. The present paper establishes the within-epoch substrate and the boundaries such
+an extension would have to preserve; it does not claim that cross-epoch learning is implemented or
+beneﬁcial.
+
+
+10    Threats, boundaries, and limitations
+
+Construct validity. The model makes graph identity narrower than result reproducibility and
+both plan adequacy and outcome correctness. The versioned binding schema makes topology,
+node behavior, contracts, graph-declared scheduling, policy, and toolchain identity-bearing: eﬀect-
+semantic ﬁelds enter Fχ , while the exact toolchain and schema header enters Fν before payload
+canonicalization. Declared closure, payload equivalence/inequivalence, partition isolation, header
+matching, and omission probes are separate tests. This improves falsiﬁability but does not prove
+that the chosen schema captures every causally relevant fact. A model selector frozen by the
+executable is mandatory in executable identity; an independently resolved route, scheduler-build
+identity, provider runtime state, and authority state belong in the declared residual environment
+binding. The pilot binds declared environment constituents through qualiﬁcation and admission
+records but does not compute one aggregate environment digest, so it cannot report hη,1 = hη,2 .
+A collision-resistant digest is evidence about identical encoded objects, not about the adequacy of
+the encoding.
+
+
+Internal validity. The C30 corpus records a development pilot whose implementation, authority
+conﬁguration, and plans changed between stages. Its 3 repository heads make that evolution visible,
+but they also prevent a ﬁxed-state outcome interpretation. Human semantic rejections and the post-
+run correction are important negative evidence, yet they were made by the author-operator during
+development rather than by blinded raters. Some telemetry, including human inspection time and
+a complete execution-token account, was not available. The pilot challenged zero drift classes; drift
+refusal remains prospectively speciﬁed but empirically untested in C30. The seeded current-Core
+drift control is separately labeled engineering-test evidence and does not change that denominator.
+
+
+External validity. The empirical material is conﬁned to the observed H-scaﬀold objective. The
+current implementation mapping is conﬁned to Mentu as the author-checked architectural instan-
+tiation. Its admitted proﬁle accepts strict DAGs, whereas the abstract model allows a wider graph
+class. The mapping therefore demonstrates one coherent realization, not cross-platform generality
+or comparative rank. Systems with runtime topology mutation, open-ended tool arbitration, or
+diﬀerent authority models may need multiple admitted epochs or a diﬀerent abstraction.
+
+
+Comparative boundary. There are no matched S or D observations, no H-direct control, and
+no unchanged-state repetition series. The paper cannot infer lower total cost, lower latency, fewer
+regressions, reduced intervention, improved task success, or planning amortization. Static authoring
+eﬀort and human inspection eﬀort would need explicit measurement in any such comparison.
+
+
+Implementation boundary. The current admitted proﬁle has a closed Core deﬁnition, qualiﬁ-
+cation and admission primitives, activation evidence, and one Core scheduler. General recipes and
+interpreted workﬂows remain compatibility proﬁles with diﬀerent authority or runner contracts.
+
+
+                                                 26
+The source audit does not enumerate every non-graph eﬀectful product operation, so it makes no
+product-wide coverage percentage. It also ﬁnds that persistent generated projections can re-enter
+legacy recipe dispatch without explicit adoption. That cross-proﬁle transition is a real adoption
+boundary; it neither erases the admitted Core nor licenses a claim of uniform admission.
+
+
+Scholarly and review boundary. A bounded set of cited primary records from earlier cycles has
+had its source identity independently reconciled and its claim-speciﬁc use explicitly dispositioned.
+The v0.9.5 exact-input return passed its mechanical isolation gate, but independent audit found ﬁve
+copy-contaminated RFC author ﬁelds, a 34-of-37 honest citation-entity crosswalk, and one mutable-
+versus-pinned source drift. Its literature coding is bounded discovery evidence and its blind review is
+major-revision input, not certiﬁcation. This revision therefore also records that v0.9.6 failed its full
+raw gate and v0.9.7 failed independent trace audit despite a green structural validator. The latter
+return’s 43/43 cite-key identity crosswalk does not certify full rendered bibliography metadata, and
+its RFC 2748 record fails the protocol’s ﬁrst-author condition. This revision therefore requires a
+fresh exact-input, trace-audited run; no priority, exhaustive-coverage, or novelty claim is licensed.
+
+
+Privacy and reproducibility boundary. The public package uses digests, summaries, com-
+mitted blob identities with path-and-line locators, and path-neutral scripts. It excludes credentials,
+transcripts, raw session exports, private ﬁlesystem paths, and sealed run-bundle contents. This pro-
+tects private material but means that some sealed evidence must be veriﬁed by an authorized local
+reproducer rather than redistributed. Bare hashes of short source lines are deliberately excluded
+because they are guessable and provide no conﬁdentiality. Timestamp-suﬃxed run identiﬁers and
+the pilot’s single-operator telemetry may support work-pattern inference. They are explicitly not
+privacy controls. The current artifact remains internal. A public release must either publish a
+pseudonymized projection whose invariants still pass or record the author-operator’s explicit con-
+sent to the retained activity data. Before a future study records other humans’ authoring or
+inspection time, its protocol must document an ethics determination and a consent procedure; the
+present pilot is single-operator and supplies neither for a multi-participant study.
+
+
+11     Prospectively committed matched-study protocol
+
+The adjudicating study was speciﬁed in the author-controlled C30 record before the pilot evidence
+and is restated here to separate future inference from pilot interpretation. No external registration
+timestamp is claimed. It freezes at least 30 objectives spanning at least 3 task families and 3 size
+strata. Each objective is executed in S, D, H-scaﬀold, and H-direct arms on resettable repository
+ﬁxtures. The ﬂoor of 30 objectives is an instrument-operability threshold, not a power justiﬁcation.
+Before inferential execution, a precision analysis will set the ﬁnal corpus size from the target width
+of the paired veriﬁed-completion interval. Backend, execution model, authority envelope, token
+and cost ceilings, and mechanical veriﬁcation contracts are held constant within objective.
+Arm order is randomized within objective, and every attempt is retained, including pre-dispatch
+refusals and execution failures. Static recipes are authored before randomized execution begins;
+their human or model authoring time is measured rather than treated as zero. H-scaﬀold and H-
+direct share the staged freeze policy so their contrast isolates authoring method more cleanly than
+a comparison with D. S and D provide the persistent and continuous-invocation reference policies.
+
+
+
+                                                  27
+The primary comparative endpoint is veriﬁed task completion. Exact executable identity, planner-
+dispatch count by lane, pre-eﬀect drift refusal, and manifest integrity are protocol-conformance
+outcomes. Secondary comparative endpoints are intervention count, elapsed time, model cost,
+planning tokens, authoring time, inspection time, and typed refusal rate. A hierarchical analysis
+tests the primary endpoint ﬁrst; secondary intervals use a Holm family-wise adjustment and unad-
+justed estimates are labeled exploratory. Every eligible ﬁrst attempt—including a refusal or failed
+execution—enters the primary analysis and is followed by 3 unchanged-state invocations when the
+arm remains operationally eligible. Reuse and amortization are reported both unconditionally and,
+separately labeled, conditional on an admitted ﬁrst execution. Outputs may vary; the executable
+identity requirement does not.
+Analysis is paired by objective. It reports arm-speciﬁc distributions, paired diﬀerences, medians,
+and bootstrap conﬁdence intervals rather than promoting pilot counts to population estimates.
+Refusals are safety outcomes, not silently recoded task successes or failures. Deviations, exclusions,
+and missing telemetry remain visible. The detailed execution and adjudication rules appear in the
+appendix.
+
+
+12     Conclusion
+
+Static, dynamic, and staged-hybrid agent execution need not imply separate runtimes. They can
+be represented as policies over when a graph is constructed, where it freezes, how it is authored,
+and which substrate executes the admitted result. That abstraction is useful only if it preserves the
+boundaries among executable identity, environment identity, output reproducibility, plan adequacy,
+outcome correctness, and authority.
+Mentu operationalizes the model’s central separation through an extracted Core with a public API
+that owns the closed executable, qualiﬁcation and admission primitives, activation evidence, and
+strict-DAG scheduler. Engine adapters supply host eﬀects, while named compatibility proﬁles retain
+diﬀerent contracts. The audit also exposes the next coherent hardening step: persistent generated
+projections need an explicit adoption transition before they can enter a diﬀerent assurance contract.
+The historical C30 checks passed on their observed identity and planner-lane transitions, while
+preserving semantic failures that mechanical qualiﬁcation did not catch. Seeded controls show
+sensitivity to 3 of 3 named historical faults; a separate current-Core control detected 1 of 1 cur-
+rent fault. Neither result supplies a comparative verdict, aggregate environment-identity result,
+unchanged-graph output repeat, or complete I5 conformance claim.
+The next scientiﬁc steps are therefore bounded: literature-check and blind-review exactly this
+frozen internal PDF and supplement in isolated contexts, then run the prospectively committed
+matched study. Until those gates close, the contribution is a testable lifecycle model, an author-
+checked architectural instantiation, an implementation-boundary ﬁnding, and a bounded invariant
+exercise—not a claim of novelty, universality, comparative rank, status, or superiority.
+
+
+
+
+                                                 28
+Appendix: Evidence, claims, and matched-study detail
+
+A. Provenance and evidence grades
+
+Table 6 names the manuscript’s load-bearing source classes. Repository-local paths are resolved by
+the reproduction wrapper; no private absolute path is part of the paper source or public package.
+Input digests and the complete ﬁle-level mapping are recorded in SOURCE-MAP.md and the generated
+evidence manifest.
+
+Source                Pinned identity             Permitted use
+C30 prospective       2d54b8c                     Frozen deﬁnitions, predictions, falsiﬁcation rules, and
+protocol                                          matched-study design
+C30 pilot corpus      867c95f                     Read-only historical invariant-exercise observations and
+                                                  negative ﬁndings
+Mentu historical      40bd3f9                     C30-era source corroboration only
+source
+Mentu current         f3d89e7                     Current Core, adapter, scheduler, admission,
+source                                            compatibility-proﬁle, and projection-adoption facts
+Structural Waste      fe02777                     Methodological discipline only; no substantive theory
+                                                  transfer
+Claude Science        External raw inputs,        Provenance of failed attempts and bounded Operon
+exports               excluded from Git           returns; raw session frames are not release evidence
+
+Table 6: Source roles. Committed source and frozen reproducible analysis are internally high-assurance
+author-produced evidence; sealed hash-checkable local artifacts are access-restricted; dirty worktree and
+vendor-reported observations are non-load-bearing. These grades do not claim independent public replica-
+tion.
+
+The external research exports are retained outside the repository. The ﬁrst export referenced
+ground_truth.json, which was unavailable; no reconstruction is treated as equivalent. The earlier
+29 July return exported an older manuscript-construction task and never received the target PDF or
+public supplement. The ﬁrst 30 July return matched the task but failed the isolation and exact-input
+contract; its canonical artifacts remain preserved as advisory evidence. The subsequent v0.9.3 rerun
+passed the reported memory-isolation and exact-two-ﬁle input gate and is preserved byte-for-byte
+under operon-v093/. Its green attestation records the declared process conditions, not substantive
+correctness; the blind review recommended major revision. The later exact-input v0.9.4 return is
+preserved byte-for-byte under operon-v094/; independent audit overrides its coordinator’s green
+narrative because the frozen raw-return validator fails. Downloaded source maps were replaced by
+a repository-owned corrected map rather than overwritten. The v0.9.5 return is preserved under
+operon-v095/. Its isolation gate passes, while independent audit rejects literature certiﬁcation
+because ﬁve RFC author records are copy-contaminated and the citation registry cannot be honestly
+crosswalked one-to-one to all cited entities. Its 44-ﬁnding blind review remains major-revision
+evidence. The v0.9.6 return is preserved as a failed raw-gate epoch with 21 advisory ﬁndings, six
+major. The v0.9.7 raw ﬁles are also preserved byte-for-byte, but their green structural result is
+overridden for release purposes by the private session trace: Contexts A and B overlapped, both
+read undeclared text derivatives, automated reviewers crossed the claimed boundary, and the same
+Context A was resumed to repair a failed full-validator result. Its 21 ﬁndings remain advisory
+repair inputs; the run supplies no release authorization. Uncommitted terminal and GUI evidence
+
+
+                                                   29
+is recorded only as internal provenance.
+The v0.9.9 certiﬁcation program ran six sealed protocol epochs (r1–r6), and every one ended hon-
+estly without producing a certiﬁable review. r1 and r2 stopped in preﬂight on frozen vocabularies
+that lacked a term for something the platform emitted. r3 reached adjudication and returned non-
+compliant on six codes. r4 stopped on a contradiction between two pinned protocol documents; r5 on
+a supplied export of a session that had never ﬁnished. r6 with custody preﬂights closing every previ-
+ously discovered gap reached adjudication and returned noncompliant on seven producer-conduct
+codes, principally the divergence of producer self-describing logs from the platform-represented
+trace: ﬁfty-seven logged network requests against zero represented network events, and one hundred
+four ﬁle-open claims contradicted by the represented event scan. Each epoch’s raw tree, toolchain,
+and stop or void record is preserved byte-for-byte under its own lineage (provenance/OPERON-V099*
+.md, operon-v099*/, operon-certification-v099*/). The r6 blind reviewer satisﬁed its own dis-
+tinguishing constraints, and its seven ﬁndings are dispositioned in the supplement as uncertiﬁed
+advisory review; ﬁndings BR9-001 through BR9-007 are addressed or scheduled in this candidate.
+By dated author decision (provenance/RELEASE-BOUNDARY-DECISION-2026-08-14.md), a certiﬁed
+review is no longer a release precondition; disclosure of this six-epoch record is. The repeated ad-
+judication result that unveriﬁed producer self-reports diverge from platform-represented traces is
+itself evidence for the position this paper takes on trace-derived, rather than self-attested, process
+records.
+
+
+B. Manuscript-facing claims ledger
+
+This manuscript and its co-reviewed reproducibility supplement are authoritative for public-facing
+claims. The machine-readable spec-map.json and full CLAIMS-LEDGER.md are internal audit meta-
+data and must not broaden this reviewed surface. Table 7 is the complete manuscript-facing
+projection of the material claim classes.
+
+
+C. Implementation and assurance-contract map
+
+Table 8 separates shared execution machinery from policy-speciﬁc assurance and topology contracts.
+
+
+
+
+                                                 30
+ID              Class                Claim                                              Status
+AGR-AD-01       architectural        Construction time, freeze boundary, authoring      Deﬁned here;
+                deﬁnition            method, and execution substrate are separately     precedents
+                                     speciﬁed coordinates over a constrained feasible   positioned
+                                     region.                                            without novelty
+                                                                                        claim
+AGR-FP-05       formal implication   Multiple policy conﬁgurations can target one       Conditional on
+                                     executable IR and substrate without sharing an     the model
+                                     authoring path.
+AGR-IF-11       implementation       MentuExecutionGraphCore owns the admitted          Current-head
+AGR-IF-12       fact                 deﬁnition, lifecycle, qualiﬁcation, admission,     source plus
+                                     activation evidence, and DAG scheduler; engine     25/25 targeted
+                                     adapters supply eﬀects.                            author-side tests;
+                                                                                        no product-wide
+                                                                                        cross-origin
+                                                                                        execution claim
+AGR-IF-13       implementation       Persistent generated projection can re-enter       Current
+                fact                 ordinary recipe discovery without an explicit      cross-proﬁle
+                                     adoption transition.                               transition
+                                                                                        boundary
+AGR-IF-14       implementation       Mentu is the author-checked architectural          Proﬁle-scoped
+                fact                 instantiation of the strict-DAG admitted proﬁle.   synthesis; not a
+                                                                                        comparative
+                                                                                        rank
+AGR-PO-01       pilot observation    Saved-plan and persistent-projection identity      Noncomparative
+AGR-PO-02                            held on all observed artifact transitions.         pilot evidence
+AGR-PO-03       pilot observation    Saved-plan execution contained no recorded         Noncomparative
+                                     graph-planner dispatch in the observed             pilot evidence
+                                     attempts.
+AGR-PO-06       pilot observation    Mechanical qualiﬁcation did not establish plan     Negative result
+AGR-PO-07                            adequacy or outcome correctness in the             retained
+                                     observed case.
+AGR-EX-01       excluded claim       Staging improves success, total cost, latency,     Not permitted
+                                     intervention, maintenance, or regression
+                                     outcomes.
+AGR-AD-06       architectural        Unadmitted runtime topology or scheduling          Scope boundary
+                deﬁnition            mutation is not another policy over one frozen     retained
+                                     graph epoch.
+
+Table 7: Claim classes and current dispositions. “Supported” is scoped to the named evidence; it is not a
+cross-platform generality claim.
+
+
+
+
+                                                   31
+Layer               Admitted graph proﬁle        Recipe compatibility         Interpreted workﬂow
+                                                 proﬁle                       proﬁle
+Executable form     Core ExecutionGraph          General                      Validated JavaScript
+                    Definition through           SequenceDefinition           program
+                    checked engine adapter
+Authority entry     Core qualiﬁcation and        Raw compatibility            Separate WorkflowRunner
+                    admission before sole        initializer with legacy      contract
+                    admitted runner              authority
+Scheduling          One Core ExecutionGraph      DAG-shaped recipes may       Interpreter-deﬁned
+                    Scheduler for the            use the Core scheduler       transitions
+                    admitted DAG                 through the engine
+                                                 adapter; raw compatibility
+                                                 routes use their selected
+                                                 SequenceRunner contract,
+                                                 without a paper-wide
+                                                 scheduling-convergence
+                                                 claim
+Evidence            Qualiﬁcation, receipt,       Sequence/run evidence        Workﬂow journal and
+                    activation, call-lane, and   under the selected recipe    budgets; no
+                    run evidence                 contract                     admitted-meta-runtime
+                                                                              claim here
+Cross-proﬁle        Projection stays in-proﬁle   Generated projection can     Not classiﬁed as a frozen
+transition          or is explicitly adopted     currently be rediscovered    inner-graph policy
+                                                 here without explicit
+                                                 adoption
+
+Table 8: Mentu runtime surfaces and assurance contracts at commit f3d89e7. The admitted Core is the
+named instantiation; compatibility proﬁles are named rather than treated as missing pieces of that Core.
+
+
+D. C30 pilot interpretation rules
+
+The paper-local reproduction applies the following rules without rewriting the frozen C30 result:
+1. Independently load each persistent recipe and prompt set, reconstruct its normalized deﬁnition,
+   contracts, eﬀective policy, and canonical executable digest, then cross-check the stored parity
+   record.
+2. Compare the inspected executable identity with the requaliﬁed admission bundle and receipt
+   for every admitted saved-plan execution.
+3. Count graph-planner dispatches only in the saved-plan execution invocation; admitted node-
+   model calls belong to a separate execution lane.
+4. Recompute every available sealed-manifest entry and count mismatches without copying private
+   contents.
+5. Count distinct discovery repository heads across plan stages to distinguish evolving debugging
+   stages from unchanged-state repeats.
+6. Preserve human semantic rejection and correction records as human judgments; do not transform
+   them into mechanical analyzer outputs.
+7. Set the comparative verdict to false whenever matched S and D arms or the registered repetition
+   series are absent.
+An identity pass supports only the relevant artifact transition. A pre-dispatch refusal is a safety
+
+
+                                                  32
+outcome. A completed step is not semantic certiﬁcation. Sequential attempts are not independent
+trials. These rules are enforced in the claims ledger as well as in prose.
+
+
+E. Prospectively committed matched-study execution
+
+Experimental unit and corpus. The experimental unit is one frozen objective evaluated under
+all four policy arms. The corpus contains at least 30 objectives across at least 3 task families and 3
+size strata. Objectives, eligibility rules, task-family labels, size labels, ﬁxture-reset procedures, and
+veriﬁcation contracts are frozen before the ﬁrst randomized arm is executed.
+
+
+Arms.
+S: a persistent recipe and prompts exist before the experimental task invocation; graph-planner
+   dispatch during execution is zero.
+D: one task-time planner dispatch constructs, qualiﬁes, and executes the graph continuously with-
+   out an operator-visible frozen plan.
+H-scaﬀold: a scaﬀold-method task-time planner creates an addressable plan; a later invocation
+   requaliﬁes and executes those exact bytes.
+H-direct: the same staged boundary as H-scaﬀold with the direct authoring method, isolating
+   staging from authoring style.
+
+
+Controls and randomization. Each objective begins from a resettable repository ﬁxture. Ex-
+ecution backend and model, authority limits, token and cost ceilings, sandbox and permission
+posture, expected-change scope, and mechanical veriﬁcation remain matched. Arm order is ran-
+domized within objective. Static artifacts are authored and frozen before randomized execution;
+authoring labor and model usage are recorded. Every invocation receives a stable objective iden-
+tiﬁer, arm, order position, ﬁxture identity, repository identity, authority-envelope identity, and
+artifact lineage.
+
+
+Attempt accounting. All attempts remain in the record. Eligibility requires valid authority,
+available credentials and provider, no disqualifying ﬁxture drift, and arrival at qualiﬁcation. Infras-
+tructure refusals remain visible but are excluded from task-success denominators according to the
+frozen rule. Human edits, retry decisions, authority changes, and plan regenerations are interven-
+tions. Mechanical drift refusals are typed separately. The analysis reports both the intention-to-run
+history and the eligible-attempt subset.
+
+
+Measurements. Protocol measures include planner dispatch count and lane, request and re-
+sponse bytes, input and output tokens, elapsed planning time, candidate source identity, executable
+identity, qualiﬁcation identity, receipt identity, manifest integrity, and pre-eﬀect drift behavior.
+Operational measures include veriﬁed completion, changed paths, execution duration, model cost,
+interventions, typed refusals, and reusable artifacts. Human authoring and inspection duration
+are timed explicitly. CLI-return latency is separated from runner duration so post-run extraction
+cannot be mistaken for execution latency.
+
+
+
+
+                                                   33
+Repetition and outcomes. After a successful ﬁrst execution, each arm receives 3 unchanged-
+state repetitions from an equivalent reset ﬁxture. Graph identity is expected to remain exact
+where the policy freezes an addressable artifact; model outputs are allowed to vary. The primary
+falsiﬁcation outcomes are any staged receipt identity mismatch, any graph-planner dispatch during
+saved-plan execution, or any detected drift that reaches eﬀectful execution. Comparative outcomes
+remain descriptive until the complete matched design is analyzed.
+
+
+Analysis and reporting. Results are paired by objective. The report provides arm-level distri-
+butions, paired diﬀerences, medians, bootstrap conﬁdence intervals, missingness, and typed refusal
+counts. H-scaﬀold versus H-direct estimates an authoring-proﬁle contrast under a shared staging
+policy; comparisons involving D or S change additional lifecycle dimensions and are interpreted
+accordingly. No outcome is promoted from the pilot. Deviations from the frozen protocol receive
+dated amendments, and null or adverse ﬁndings remain in the release artifact.
+
+
+F. Operon release gate
+
+The internal manuscript becomes eligible for a public preprint only after:
+1. input-bounded discovery, followed by full-text or identiﬁer checks, across agent frameworks,
+   planner–executor systems, graph runtimes, planning, content-addressed builds, durable execu-
+   tion, provenance, and admission, in a separately closed review-domain session;
+2. a veriﬁed prior-art registry and literature matrix;
+3. blind review of exactly the internal PDF and public supplement in a second separately closed
+   review-domain session, with a digest-bound deterministic text projection of that same PDF
+   permitted only as a navigation aid, and with no network, Context A artifact, internal claims
+   ledger, or spec map as input;
+4. detached derivation over both closed-session exports, scanning each root frame and its complete
+   descendant closure for undeclared inputs, cross-domain references, and prohibited eﬀects;
+5. explicit disposition of novelty, terminology, formal-soundness, empirical-overclaim, citation, and
+   reproducibility ﬁndings; and
+6. an integrity build in which cited and bibliography sets match and no unveriﬁed identiﬁer remains;
+7. author-owned publication clearance binding a public licence, a stable release locator, and explicit
+   consent for retained timestamp-bearing activity data.
+The machine gate treats the return as a closed evidence layout. It binds canonical prompt and
+preﬂight bytes, proves the declared text projection against the authoritative PDF, rejects unde-
+clared local reads and all blind-domain network access, recomputes manuscript citation locations,
+and requires auditable receipts for source resolution and ﬁnding disposition. A review domain is
+the complete frame graph reachable from one exported root, not only its initiating frame. De-
+clared reviewer or critic descendants inside that closure are therefore visible parts of the review
+computation; an edge, read, identiﬁer, or artifact crossing from the literature domain into the blind
+domain is disqualifying. After both producers terminate, a separate Codex-side extractor reads
+and hashes the actual exports and derives the lifecycle, tool, artifact, and information-ﬂow record.
+The producer cannot submit a substitute audit JSON or run the certifying validator. The raw
+exports remain private and outside the public package; the derived audit records only path-neutral
+identities, counts, locators, digests, and a scoped result.
+The result is explicitly relative to events represented in the supplied exports. Because those ex-
+
+
+                                                 34
+ports are not platform-signed completeness proofs, unobservable host controls remain unknown:
+an absence in the export is not promoted into proof that omitted platform state could not exist.
+Review independence, observable non-interference, artifact consistency, scholarly correctness, and
+author release authority are separate decisions. Release validation, the reviewed internal rebuild,
+and public packaging run from one frozen source snapshot. These controls establish byte identity,
+provenance, and review traceability; they do not mechanically prove scholarly correctness or seman-
+tic support. Search breadth and literature-matrix coding likewise remain attested scholarly process:
+the gate binds the returned artifacts but cannot infer exhaustive coverage or semantic correctness
+from their presence.
+Operon ﬁndings are review inputs, not automatic authority. The v0.9.5 exact-input return supplied
+a substantive major-revision review and passed its frozen process gate, but its copy-contaminated
+and non-bijective literature registry cannot authorize release. The v0.9.6 return failed its raw gate.
+The v0.9.7 return demonstrates why self-attested isolation is also insuﬃcient: its raw validator is
+green while trace audit is red. The v0.9.8 preﬂight adds the converse lesson: an unveriﬁable audit
+must stop before review rather than be completed by assertion. This revision changes the PDF,
+supplement, review protocol, and build projection. Each citation and revision remains subject to
+repository-owned veriﬁcation and disposition. The r6 epoch then reached adjudication and returned
+noncompliant on seven producer-conduct codes; the six-epoch record is disclosed in Appendix A.
+By the dated author decision of 2026-08-14, release no longer waits on a certiﬁed review; it requires
+the disclosed record, the incorporated r6 uncertiﬁed-review dispositions, and the author’s explicit
+release act.
+
+
+References
+
+ [1] A. Agrawal, A. N. Modi, A. Passos, A. Lavoie, A. Agarwal, A. Shankar, I. Ganichev,
+     J. Levenberg, M. Hong, R. Monga, and S. Cai. TensorFlow Eager: A multi-stage, python-
+     embedded DSL for machine learning, 2019. Version 1; establishes imperative construction plus
+     JIT tracing to executable dataﬂow graphs. URL: https://arxiv.org/abs/1903.01855v1,
+     arXiv:1903.01855.
+
+ [2] S. Amini, Y. Benajiba, C. Bernardis, P. Cayet, H. Chaﬁ, A. Fathan, L. Faucon, D. Hilloulin,
+     S. Hong, I. Kossyk, T. M. S. Le, R. Patra, S. Ravi, J. Schweizer, J. Singh, S. Singh, W. Sun,
+     K. Talamadupula, and J. Xu. Open agent speciﬁcation (Agent Spec): A uniﬁed representation
+     for AI agents, 2025. Version 4. URL: https://arxiv.org/abs/2510.04173v4, arXiv:2510.
+     04173.
+
+ [3] G. Besanson. SARC: A governance-by-architecture framework for agentic AI systems, 2026.
+     Working paper. URL: https://arxiv.org/abs/2605.07728v1, arXiv:2605.07728.
+
+ [4] S. Burckhardt, C. Gillum, D. Justo, K. Kallas, C. McMahon, and C. S. Meiklejohn. Durable
+     functions: Semantics for stateful serverless. Proceedings of the ACM on Programming Lan-
+     guages, 5(OOPSLA), 2021. doi:10.1145/3485510.
+
+ [5] M. Colledanchise and P. Ögren. How behavior trees modularize hybrid control systems and
+     generalize sequential behavior compositions, the subsumption architecture, and decision trees.
+     IEEE Transactions on Robotics, 33(2):372–389, 2017. doi:10.1109/TRO.2016.2633567.
+
+
+
+                                                 35
+ [6] M. R. Crusoe, S. Abeln, A. Iosup, P. Amstutz, J. Chilton, N. Tijanić, H. Ménager, S. Soiland-
+     Reyes, B. Gavrilović, C. Goble, and The CWL Community. Methods included: Standardizing
+     computational reuse and portability with the common workﬂow language. Communications
+     of the ACM, 65(6):54–63, 2022. doi:10.1145/3486897.
+
+ [7] E. Deelman, K. Vahi, G. Juve, M. Rynge, S. Callaghan, P. J. Maechling, R. Mayani, W. Chen,
+     R. F. da Silva, M. Livny, and K. Wenger. Pegasus, a workﬂow management system for science
+     automation. Future Generation Computer Systems, 46:17–35, 2015. doi:10.1016/j.future.
+     2014.10.008.
+
+ [8] E. Dolstra, A. Löh, and N. Pierron. NixOS: A purely functional linux distribution. Journal of
+     Functional Programming, 20(5–6):577–615, 2010. doi:10.1017/S0956796810000195.
+
+ [9] R. E. Fikes, P. E. Hart, and N. J. Nilsson. Learning and executing generalized robot plans.
+     Artiﬁcial Intelligence, 3:251–288, 1972. doi:10.1016/0004-3702(72)90051-3.
+
+[10] Gatekeeper Contributors.   Gatekeeper Operations.  Open Policy Agent, 2026. Of-
+     ﬁcial v3.23.0 source snapshot; accessed 30 July 2026.  URL: https://github.com/
+     open-policy-agent/gatekeeper/blob/cdf332c3f2762c616d4b6f433712a8d7ed62b3d8/
+     website/docs/operations.md.
+
+[11] I. Georgievski and M. Aiello. HTN planning: Overview, comparison, and beyond. Artiﬁcial
+     Intelligence, 222:124–156, 2015. doi:10.1016/j.artint.2015.02.002.
+
+[12] M. Ghallab, D. Nau, and P. Traverso. Automated Planning and Acting. Cambridge University
+     Press, 2016. doi:10.1017/CBO9781139583923.
+
+[13] W. Hua, X. Yang, M. Jin, Z. Li, W. Cheng, R. Tang, and Y. Zhang. TrustAgent: Towards
+     safe and trustworthy LLM-based agents. In Findings of the Association for Computational
+     Linguistics: EMNLP 2024, pages 10000–10016. Association for Computational Linguistics,
+     2024. URL: https://aclanthology.org/2024.findings-emnlp.585/, doi:10.18653/v1/
+     2024.findings-emnlp.585.
+
+[14] O. Khattab, A. Singhvi, P. Maheshwari, Z. Zhang, K. Santhanam, S. Vardhamanan, S. Haq,
+     A. Sharma, T. T. Joshi, H. Moazam, H. Miller, M. Zaharia, and C. Potts. DSPy: Compiling
+     declarative language model calls into self-improving pipelines, 2023. Version 1; the versioned
+     preprint is the veriﬁed identity used here. URL: https://arxiv.org/abs/2310.03714v1,
+     arXiv:2310.03714.
+
+[15] S. Kim, S. Moon, R. Tabrizi, N. Lee, M. W. Mahoney, K. Keutzer, and A. Gholami. An LLM
+     compiler for parallel function calling. In Proceedings of the 41st International Conference on
+     Machine Learning, volume 235 of Proceedings of Machine Learning Research, 2024. URL:
+     https://proceedings.mlr.press/v235/kim24y.html.
+
+[16] C. Lamb and S. Zacchiroli. Reproducible builds: Increasing the integrity of software supply
+     chains. IEEE Software, 39(2):62–70, 2022. doi:10.1109/MS.2021.3073045.
+
+[17] LangChain. LangGraph Backward Compatibility. LangChain, 2026. Oﬃcial documen-
+     tation snapshot; accessed 30 July 2026. URL: https://github.com/langchain-ai/
+     docs/blob/5b042a059975a17e297b1f121e44870df36b61c9/src/oss/langgraph/
+     backward-compatibility.mdx.
+
+
+                                                36
+[18] LangChain. LangGraph Persistence. LangChain, 2026. Oﬃcial documentation snap-
+     shot; accessed 30 July 2026.  URL: https://github.com/langchain-ai/docs/blob/
+     5b042a059975a17e297b1f121e44870df36b61c9/src/oss/langgraph/persistence.mdx.
+
+[19] LangChain.    LangGraph Runtime.  LangChain, 2026.   Oﬃcial documentation snap-
+     shot; accessed 30 July 2026.   URL: https://github.com/langchain-ai/docs/blob/
+     5b042a059975a17e297b1f121e44870df36b61c9/src/oss/langgraph/pregel.mdx.
+
+[20] A. Mokhov, N. Mitchell, and S. P. Jones. Build systems à la carte. Proceedings of the ACM
+     on Programming Languages, 2(ICFP):1–29, 2018. doi:10.1145/3236774.
+
+[21] L. Moreau and P. Missier. PROV-DM: The PROV data model. W3c recommenda-
+     tion, World Wide Web Consortium, Apr. 2013. URL: https://www.w3.org/TR/2013/
+     REC-prov-dm-20130430/.
+
+[22] G. C. Necula. Proof-carrying code. In Proceedings of the 24th ACM SIGPLAN-SIGACT
+     Symposium on Principles of Programming Languages, pages 106–119. ACM, 1997. doi:10.
+     1145/263699.263712.
+
+[23] Z. Newman, J. S. Meyers, and S. Torres-Arias. Sigstore: Software signing for everybody. In
+     Proceedings of the 2022 ACM SIGSAC Conference on Computer and Communications Security,
+     pages 2353–2367. ACM, 2022. doi:10.1145/3548606.3560596.
+
+[24] J. Park and R. Sandhu. The UCONABC usage control model. ACM Transactions on Infor-
+     mation and System Security, 7(1):128–174, 2004. doi:10.1145/984334.984339.
+
+[25] A. Prasad, A. Koller, M. Hartmann, P. Clark, A. Sabharwal, M. Bansal, and T. Khot. ADaPT:
+     As-needed decomposition and planning with language models. In Findings of the Association
+     for Computational Linguistics: NAACL 2024, 2024. URL: https://aclanthology.org/2024.
+     findings-naacl.264/, doi:10.18653/v1/2024.findings-naacl.264.
+
+[26] A. Rundgren, B. Jordan, and S. Erdtman. JSON canonicalization scheme (JCS). RFC 8785,
+     RFC Editor, June 2020. Informational; a serialization baseline, not a domain-equivalence or
+     path-alias speciﬁcation. URL: https://www.rfc-editor.org/rfc/rfc8785.html.
+
+[27] F. B. Schneider. Enforceable security policies. ACM Transactions on Information and System
+     Security, 3(1):30–50, 2000. doi:10.1145/353323.353382.
+
+[28] E. Sérié. OxyMake: A formally-speciﬁed, content-addressable workﬂow engine, 2026. Version
+     2. URL: https://arxiv.org/abs/2606.20989v2, arXiv:2606.20989.
+
+[29] Sigstore Contributors. Kubernetes Policy Controller. Sigstore, 2026. Oﬃcial documen-
+     tation snapshot; accessed 30 July 2026. URL: https://github.com/sigstore/docs/
+     blob/35180becb3f9c68ef39ccab9b4b4616170b3d237/content/en/policy-controller/
+     overview.md.
+
+[30] SLSA Community. SLSA v1.2: Verifying Artifacts. Supply-chain Levels for Software Artifacts,
+     2026. Approved speciﬁcation v1.2 snapshot; accessed 30 July 2026. URL: https://github.
+     com/slsa-framework/slsa/blob/19e4e2f005f871270c4f555fc47afecfb37f3efe/docs/
+     spec/v1.2/verifying-artifacts.md.
+
+
+
+
+                                              37
+[31] Temporal Technologies. Temporal Event History. Temporal Technologies, 2026. Of-
+     ﬁcial documentation snapshot; accessed 30 July 2026. URL: https://github.com/
+     temporalio/documentation/blob/5bb982c4574fb8bab54d776e5ff3264494d88c4c/docs/
+     encyclopedia/event-history/event-history.mdx.
+
+[32] The Bazel Authors. Remote Execution API, Version 2.12.0. Bazel, 2026. Protocol Buﬀers
+     speciﬁcation; tag v2.12.0; accessed 29 July 2026. URL: https://github.com/bazelbuild/
+     remote-apis/blob/9e084d0e43e717128ee72b5be584a7ba33e8006b/build/bazel/remote/
+     execution/v2/remote_execution.proto.
+
+[33] The Kubernetes Authors.    Admission Control in Kubernetes.   Kubernetes, 2026.
+     Kubernetes v1.36 documentation snapshot; accessed 30 July 2026.   URL: https:
+     //github.com/kubernetes/website/blob/65a8302b72fc82fe7c15829462b2ac31891813ea/
+     content/en/docs/reference/access-authn-authz/admission-controllers.md.
+
+[34] S. Torres-Arias, H. Afzali, T. K. Kuppusamy, R. Curtmola, and J. Cappos. in-toto: Providing
+     farm-to-table guarantees for bits and bytes. In 28th USENIX Security Symposium, 2019. URL:
+     https://www.usenix.org/conference/usenixsecurity19/presentation/torres-arias.
+
+[35] G. Trooskens, A. Karlsberg, A. Sharma, L. De Brouwer, M. Van Puyvelde, M. Young, J. Thick-
+     stun, G. Alterovitz, and W. A. De Brouwer. Compiled AI: Deterministic code generation
+     for LLM-based workﬂow automation, 2026. URL: https://arxiv.org/abs/2604.05150v1,
+     arXiv:2604.05150.
+
+[36] W. M. P. van der Aalst. The application of petri nets to workﬂow management. Journal of
+     Circuits, Systems and Computers, 8(1):21–66, 1998. doi:10.1142/S0218126698000043.
+
+[37] C. L. Wang, T. Singhal, A. Kelkar, and J. Tuo. MI9: An integrated runtime governance
+     framework for agentic AI, 2025. Version 4; presented at the AAAI 2026 Workshop on Trust and
+     Control in Agentic AI. URL: https://arxiv.org/abs/2508.03858v4, arXiv:2508.03858.
+
+[38] H. Wang, C. M. Poskitt, and J. Sun. AgentSpec: Customizable runtime enforcement for safe
+     and reliable LLM agents, 2025. Version 3; arXiv metadata reports acceptance at ICSE 2026,
+     but this entry claims only the veriﬁed preprint identity. URL: https://arxiv.org/abs/2503.
+     18666v3, arXiv:2503.18666.
+
+[39] Y. Wang, J. Zhang, T. Cai, Z. Liu, Q. Sun, Z. Sun, Z. Wu, M. Dong, M. Zheng, X. Yin, and
+     Y. Zhu. From agent traces to trust: A survey of evidence tracing and execution provenance
+     in LLM agents, 2026. Version 4. URL: https://arxiv.org/abs/2606.04990v4, arXiv:2606.
+     04990.
+
+[40] C. Xu, K. Ke, Z. Liu, J. Wei, Z. Shao, W. Guo, and C. Yu. EvoMAS: Learning execution-
+     time workﬂows for multi-agent systems, 2026. URL: https://arxiv.org/abs/2605.08769v1,
+     arXiv:2605.08769.
+
+[41] S. Yao, J. Zhao, D. Yu, N. Du, I. Shafran, K. Narasimhan, and Y. Cao. ReAct: Synergizing
+     reasoning and acting in language models, 2022. Version 3; the versioned preprint is the veriﬁed
+     identity used here. URL: https://arxiv.org/abs/2210.03629v3, arXiv:2210.03629.
+
+[42] R. Yavatkar, D. Pendarakis, and R. Guerin. A framework for policy-based admission con-
+     trol. RFC 2753, Internet Engineering Task Force, 2000. Informational. URL: https:
+     //www.rfc-editor.org/rfc/rfc2753.
+
+                                                38
+[43] H. L. S. Younes and R. G. Simmons. VHPOP: Versatile heuristic partial order planner. Journal
+     of Artiﬁcial Intelligence Research, 20:405–430, 2003. doi:10.1613/jair.1136.
+
+[44] J. Zhang, J. Xiang, Z. Yu, F. Teng, X. Chen, J. Chen, M. Zhuge, X. Cheng, S. Hong, J. Wang,
+     B. Zheng, B. Liu, Y. Luo, and C. Wu. AFlow: Automating agentic workﬂow generation, 2024.
+     Version 3; the versioned preprint is the veriﬁed identity used here. URL: https://arxiv.org/
+     abs/2410.10762v3, arXiv:2410.10762.
+
+[45] M. Zhuge, W. Wang, L. Kirsch, F. Faccio, D. Khizbullin, and J. Schmidhuber. GPTSwarm:
+     Language agents as optimizable graphs. In Proceedings of the 41st International Conference
+     on Machine Learning, volume 235 of Proceedings of Machine Learning Research, pages 62743–
+     62767. PMLR, 2024. URL: https://proceedings.mlr.press/v235/zhuge24a.html.
+
+
+
+
+                                               39
+
