@@ -8,11 +8,37 @@ It also holds the full provenance record behind that preprint, including six
 attempted external certification epochs, none of which produced a certifiable
 review, all of which are preserved here rather than summarized away.
 
+## Versions
+
+The public rendition is **v1.0, dated 22 August 2026**: `paper-v1.0-preprint.pdf`.
+Read that one.
+
+It is the same manuscript as the archived `paper-v0.9.10-internal.pdf`, with
+three authored front-matter changes and nothing else.
+`RENDITION-V1.0-2026-08-22.md` lists them. In short: the cover notice's closing
+clause, which previously read "has not occurred; not for dissemination", now
+records that the release act occurred on 2026-08-22 under Decision A1; Appendix
+F gains a dated status paragraph; the version and date strings change. No
+epoch, no gate, no disclosure was touched.
+
+Both PDFs carry the words "Internal preprint" at the top of the cover. That is
+accurate and deliberate. The manuscript was written under an internal
+certification protocol, six epochs of that protocol ran, and none of them
+produced a certifiable review. The cover notice discloses that instead of
+hiding it. What changed on 2026-08-22 is the release act, not the
+certification status.
+
+v0.9.10-internal remains the internal version identity under the release gate,
+and it is the identity every hash and provenance record in this repository is
+written against. It is kept here rather than replaced.
+
 ## What is in here
 
 | Path | What it is |
 | --- | --- |
-| `paper-v0.9.10-internal.pdf` | The paper. 39 pages, 4 figures, 45 references. |
+| `paper-v1.0-preprint.pdf` | The paper as released. 39 pages, 4 figures, 45 references. sha256 `1c92f0e9680cf712989b1542c443dbf032faf74c8a0504133b51527cadf8f218`. |
+| `RENDITION-V1.0-2026-08-22.md` | The three front-matter changes that make v1.0, and the decision behind them. |
+| `paper-v0.9.10-internal.pdf` | The archived internal build. The bytes every frozen manifest below describes. |
 | `paper-v0.9.10-internal.txt` | Deterministic text projection of that exact PDF, produced by `pdftotext -layout -enc UTF-8`. A navigation aid, not a second source. |
 | `REPRODUCIBILITY-SUPPLEMENT.md` | Procedures, boundaries, and what each reported number does and does not license. |
 | `SOURCE-PROJECTION-V0910.json` | Frozen build projection: the sha256 of every input that produced the PDF. |
@@ -31,11 +57,39 @@ review, all of which are preserved here rather than summarized away.
 Nothing here asks you to take a hash on trust. Every claim of identity below is
 checkable in a few minutes.
 
+**First, one thing to know about the manifests.** `SHA256SUMS` and
+`SOURCE-PROJECTION-V0910.json` are frozen records of the v0.9.10-internal
+build. They were sealed then and are not rewritten. The v1.0 rendition changed
+three files in `arxiv/` (`paper.tex`, `build-context.tex`, `abstract.txt`), so
+those three no longer match the frozen manifest in the current tree, and they
+are supposed not to. Checking the manifest against the current working tree
+reports exactly those three and nothing else.
+
+To check the manifest against the tree it actually describes, use the release
+commit:
+
+```sh
+mkdir -p /tmp/agr-v0910
+git archive 07f6d98 | tar -x -C /tmp/agr-v0910
+cd /tmp/agr-v0910 && shasum -a 256 -c SHA256SUMS
+```
+
+One file fails there too: `RELEASE-DECISION-2026-08-21.md`. The manifest was
+computed before a closing "Decision A1" section was appended to that document,
+and the appended text shipped in the release commit. The section was later
+lifted back out, so the file at the current tip does match the manifest again.
+The Decision A1 text itself is preserved in git history at commit `07f6d98`,
+and the decision it records is restated in `RENDITION-V1.0-2026-08-22.md` and
+on the v1.0 cover.
+
 **1. Check the shipped bytes against the manifest.**
 
 ```sh
 shasum -a 256 -c SHA256SUMS
 ```
+
+Expect `OK` on 44 of 47 entries, and `FAILED` on the three `arxiv/` sources the
+v1.0 rendition rewrote.
 
 **2. Check that the paper's own frozen projection agrees.**
 
@@ -62,28 +116,50 @@ for field, path in [
 PY
 ```
 
-**3. Rebuild the PDF and get the same bytes.**
-
-The build is deterministic. With [Tectonic](https://tectonic-typesetting.github.io)
-0.16.9 installed, the source in `arxiv/` reproduces the shipped PDF exactly:
+Two of the seven report `MISMATCH` in the current tree, for the same reason as
+above: `paper_tex_sha256` and `internal_build_context_sha256` describe the
+v0.9.10 sources, and `arxiv/` now holds the v1.0 ones. Both match at the
+release commit:
 
 ```sh
-cd arxiv
-SOURCE_DATE_EPOCH=1785369600 tectonic -X compile -C --reruns 2 \
-  --keep-intermediates --keep-logs --outdir ../rebuild paper.tex
-shasum -a 256 ../rebuild/paper.pdf
-# expect 231a7330cbab0d1ea99bb39ca7c826988efe4fe208114e547a33ba18b84ecab2
+git show 07f6d98:arxiv/paper.tex | shasum -a 256
+git show 07f6d98:arxiv/build-context.tex | shasum -a 256
 ```
 
-This was confirmed on 2026-08-21: 352,115 bytes, byte-identical to the released
-PDF. The fixed `SOURCE_DATE_EPOCH` is what makes the output stable across
-machines and dates.
+**3. Rebuild the PDF.**
+
+`arxiv/` holds the v1.0 sources. `arxiv/upload-package-2026-08-22.tar.gz` is the
+same set as submitted, and its `paper.tex`, `build-context.tex` and `paper.bbl`
+are byte-identical to the loose copies. With
+[Tectonic](https://tectonic-typesetting.github.io) 0.16.9:
+
+```sh
+mkdir -p rebuild
+cp references.bib arxiv/
+cd arxiv
+SOURCE_DATE_EPOCH=1787356800 tectonic -X compile -C --reruns 2 \
+  --keep-intermediates --keep-logs --outdir ../rebuild paper.tex
+```
+
+The v0.9.10 sources build the same way from `git archive 07f6d98`, with
+`SOURCE_DATE_EPOCH=1785369600`.
+
+On byte identity, read the claim narrowly. The author confirmed on 2026-08-21
+that the v0.9.10 sources rebuilt to 352,115 bytes, byte-identical to the
+released PDF, on that machine on that date. `SOURCE_DATE_EPOCH` removes the
+timestamp, but it does not pin the TeX package set: Tectonic resolves its
+support files from a versioned web bundle, and a later bundle typesets to a
+different byte stream. Rebuilding the v0.9.10 sources against a 2026 bundle
+here produced a well-formed 350,889-byte PDF, not the sealed one. Treat the
+`SHA256SUMS` and `SOURCE-PROJECTION-V0910.json` entries as the authority on
+what was released, and a rebuild as a check on the source, not as a second
+witness to the bytes.
 
 One caveat about the bibliography. Tectonic re-runs BibTeX on every build and
 rewrites `paper.bbl` in place, so the rebuild needs `references.bib` beside
-`paper.tex`. It ships here, at the top level, so copy it into `arxiv/` before
-rebuilding. This is a Tectonic behaviour, not an arXiv one: arXiv does not run
-BibTeX and typesets the supplied `paper.bbl` directly.
+`paper.tex`. It ships here, at the top level, which is why the command above
+copies it in. This is a Tectonic behaviour, not an arXiv one: arXiv does not
+run BibTeX and typesets the supplied `paper.bbl` directly.
 
 **4. Reproduce the text projection.**
 
@@ -91,9 +167,10 @@ BibTeX and typesets the supplied `paper.bbl` directly.
 pdftotext -layout -enc UTF-8 paper-v0.9.10-internal.pdf - | shasum -a 256
 ```
 
-The extractor version pinned in `REVIEW-PAIR-MANIFEST-V0910.json` is
-`pdftotext version 26.03.0`. Other versions may differ in whitespace, which is
-exactly why the version is pinned rather than assumed.
+Expect `d27f06255fe436cf2f676e68db1d3cedf80c5d68a1734bb74758d0f868365dea`. The
+extractor version pinned in `REVIEW-PAIR-MANIFEST-V0910.json` is `pdftotext
+version 26.03.0`. Other versions may differ in whitespace, which is exactly why
+the version is pinned rather than assumed.
 
 ## What this record does and does not establish
 
@@ -115,22 +192,28 @@ conclusions from the certification record. In short:
   the paper excludes comparative superiority, amortization, and generality
   claims on that basis.
 
-The PDF's cover carries an internal preprint notice, including the words "not
-for dissemination". That text is a preserved artifact of the build that
-produced these bytes, and it is superseded by `RELEASE-DECISION-2026-08-21.md`,
-which records the author's decision to release them. It was left in place
-rather than quietly edited, because editing it would have changed every hash on
-this page.
+### On the cover notice
 
-Removing that notice honestly would have meant building in release mode, and
-that was attempted on 2026-08-21 rather than assumed.
+Both covers carry an internal preprint notice. The v0.9.10 cover ends "That act
+has not occurred; not for dissemination". The v1.0 cover ends by recording that
+the act occurred on 2026-08-22 under Decision A1. That is the only substantive
+difference between the two notices, and it was made because the release act
+falsified the old sentence.
+
+The rest of the notice stands in both, because it is still true. The six-epoch
+record is what it is, and the notice is where the paper says so on its own
+first page.
+
+Clearing the notice in full would have meant building in release mode, and that
+was attempted on 2026-08-21 rather than assumed.
 `VERSION-IDENTITY-RESOLUTION-2026-08-21.md` records what happened. Release mode
 requires an external review bundle at the frozen protocol revision with a green
 validation result. No such bundle exists: the four raw trees that have the
 required layout declare later protocol revisions, and the validations that were
 produced returned `noncompliant` twice, `indeterminate` once, and nothing once.
-The gate was therefore left closed and unamended rather than widened to let
-these bytes through, which is the same reason the notice was left in the PDF.
+The gate was left closed and unamended rather than widened to let these bytes
+through. v1.0 is an authored front-matter rendition, not a gate pass, and
+`RENDITION-V1.0-2026-08-22.md` says so in those words.
 
 ## What is withheld
 
@@ -151,7 +234,7 @@ following are deliberately not here:
 ## Citing
 
 Rashid Azarang. *The Agent Graph Runtime: A Unified Model for Static, Dynamic,
-and Hybrid Execution*. Preprint, 2026.
+and Hybrid Execution*. Preprint v1.0, 22 August 2026.
 
 An arXiv identifier will be added here once the submission is processed. The
 same identifier is owed to `RELEASE-CLEARANCE.json`, whose release locator is
