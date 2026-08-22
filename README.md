@@ -59,11 +59,17 @@ checkable in a few minutes.
 
 **First, one thing to know about the manifests.** `SHA256SUMS` and
 `SOURCE-PROJECTION-V0910.json` are frozen records of the v0.9.10-internal
-build. They were sealed then and are not rewritten. The v1.0 rendition changed
-three files in `arxiv/` (`paper.tex`, `build-context.tex`, `abstract.txt`), so
-those three no longer match the frozen manifest in the current tree, and they
-are supposed not to. Checking the manifest against the current working tree
-reports exactly those three and nothing else.
+build. They were sealed then and are not rewritten. Four files in the current
+tree therefore no longer match `SHA256SUMS`, and are supposed not to:
+
+- `arxiv/paper.tex`, `arxiv/build-context.tex`, `arxiv/abstract.txt`, rewritten
+  by the v1.0 rendition.
+- `README.md`, this file, which is living documentation rather than a sealed
+  record. It is listed in the manifest because the manifest hashes everything
+  that shipped on release day, and it has been revised since.
+
+Checking the manifest against the current working tree reports exactly those
+four and nothing else. Every sealed artifact still verifies.
 
 To check the manifest against the tree it actually describes, use the release
 commit:
@@ -88,8 +94,7 @@ on the v1.0 cover.
 shasum -a 256 -c SHA256SUMS
 ```
 
-Expect `OK` on 44 of 47 entries, and `FAILED` on the three `arxiv/` sources the
-v1.0 rendition rewrote.
+Expect `OK` on 43 of 47 entries, and `FAILED` on the four named above.
 
 **2. Check that the paper's own frozen projection agrees.**
 
