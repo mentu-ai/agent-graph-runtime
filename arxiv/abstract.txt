@@ -1,27 +1,5 @@
-Agent systems are classified as static workflows, dynamic planners, or hybrids.
-Those labels conflate four separable questions: when a graph is constructed,
-where it becomes immutable and addressable, how it is authored, and what
-executes it. This paper defines an agent graph runtime model in which they are
-separately specified lifecycle coordinates over a constrained feasible region,
-sharing one executable representation and execution substrate. Static, dynamic
-one-shot, staged-direct, and staged-scaffold configurations become reference
-points in that region, not necessarily distinct runtimes, and not every
-Cartesian combination is claimed meaningful or implementable.
+Agent systems are classified as static workflows, dynamic planners, or hybrids. Those labels conflate four separable questions: when a graph is constructed, where it becomes immutable and addressable, how it is authored, and what executes it. This paper defines an agent graph runtime model in which they are separately specified lifecycle coordinates over a constrained feasible region, sharing one executable representation and execution substrate. Static, dynamic one-shot, staged-direct, and staged-scaffold configurations become reference points in that region, not necessarily distinct runtimes, and not every Cartesian combination is claimed meaningful or implementable.
 
-The model separates construction, lowering, qualification, freezing,
-requalification, admission, execution, and evidence. It also separates easily
-confused properties: executable graph identity, execution environment identity,
-output reproducibility, plan adequacy, and outcome correctness. Mentu is the
-paper's author-checked instantiation of the strict-DAG admitted profile, and one
-cross-profile boundary is reported as unenforced: a generated persistent
-projection can be rediscovered by legacy dispatch without a named adoption
-transition, so the product does not yet enforce projection-is-not-adoption. A
-targeted suite passes 25 of 25 tests across 13 filters at the current source pin.
+The model separates construction, lowering, qualification, freezing, requalification, admission, execution, and evidence. It also separates easily confused properties: executable graph identity, execution environment identity, output reproducibility, plan adequacy, and outcome correctness. Mentu is the paper's author-checked instantiation of the strict-DAG admitted profile, and one cross-profile boundary is reported as unenforced: a generated persistent projection can be rediscovered by legacy dispatch without a named adoption transition, so the product does not yet enforce projection-is-not-adoption. A targeted suite passes 25 of 25 tests across 13 filters at the current source pin.
 
-A frozen historical pilot is reported as a mechanical invariant exercise, not a
-treatment comparison: identity equality for five qualified projections, three
-saved-plan transitions that all reached admission and retained identity, zero
-planner dispatches, and sealed-manifest integrity. It retains negative evidence:
-mechanically qualified plans failed human semantic review. With no matched
-observations and no repetition series, comparative superiority, amortization,
-and generality claims are excluded; novelty remains uncertified.
+A frozen historical pilot is reported as a mechanical invariant exercise, not a treatment comparison: identity equality for five qualified projections, three saved-plan transitions that all reached admission and retained identity, zero planner dispatches, and sealed-manifest integrity. It retains negative evidence: mechanically qualified plans failed human semantic review. With no matched observations and no repetition series, comparative superiority, amortization, and generality claims are excluded; novelty remains uncertified.
