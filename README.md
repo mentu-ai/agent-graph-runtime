@@ -36,7 +36,7 @@ written against. It is kept here rather than replaced.
 
 | Path | What it is |
 | --- | --- |
-| `paper-v1.0-preprint.pdf` | The paper as released. 39 pages, 4 figures, 45 references. sha256 `1c92f0e9680cf712989b1542c443dbf032faf74c8a0504133b51527cadf8f218`. |
+| `paper-v1.0-preprint.pdf` | The paper as released. 39 pages, 4 figures, 45 references. sha256 `beabc9be049c62658b8cb91ce2223a0fe25a8dc3c7def8cac2b9b750ee4c6c81` (build-corrected 2026-08-26; see RENDITION-V1.0-2026-08-22.md addendum). |
 | `RENDITION-V1.0-2026-08-22.md` | The three front-matter changes that make v1.0, and the decision behind them. |
 | `paper-v0.9.10-internal.pdf` | The archived internal build. The bytes every frozen manifest below describes. |
 | `paper-v0.9.10-internal.txt` | Deterministic text projection of that exact PDF, produced by `pdftotext -layout -enc UTF-8`. A navigation aid, not a second source. |
