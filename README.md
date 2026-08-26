@@ -239,12 +239,24 @@ following are deliberately not here:
 ## Citing
 
 Rashid Azarang. *The Agent Graph Runtime: A Unified Model for Static, Dynamic,
-and Hybrid Execution*. Preprint v1.0, 22 August 2026.
+and Hybrid Execution*. Preprint v1.0.1, 2026.
+doi:[10.5281/zenodo.22118742](https://doi.org/10.5281/zenodo.22118742)
+(concept DOI [10.5281/zenodo.22118741](https://doi.org/10.5281/zenodo.22118741)).
 
-An arXiv identifier will be added here once the submission is processed. The
-same identifier is owed to `RELEASE-CLEARANCE.json`, whose release locator is
-recorded as pending and is bound by a dated addendum within 72 hours of the
-identifier being assigned.
+```bibtex
+@misc{azarang2026agentgraphruntime,
+  author    = {Azarang, Rashid},
+  title     = {The Agent Graph Runtime: A Unified Model for Static,
+               Dynamic, and Hybrid Execution},
+  year      = {2026},
+  doi       = {10.5281/zenodo.22118742},
+  publisher = {Zenodo},
+  note      = {Preprint v1.0.1}
+}
+```
+
+The release locator is bound by `RELEASE-CLEARANCE-ADDENDUM-2026-08-26.md`
+per the clearance record's own pending clause.
 
 ## Licence
 
